@@ -1,0 +1,14 @@
+services:
+  hello:
+    container_name: hello
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      FOO: bar
+    ports:
+      - 8000:8000
+    # this works for hot code reload
+    volumes:
+      - ./src:/app/src
+    entrypoint: /entrypoint.sh

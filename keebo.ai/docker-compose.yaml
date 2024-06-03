@@ -1,14 +1,15 @@
 services:
   hello:
-    container_name: hello
+    container_name: keebo.ai
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       FOO: bar
+      PORT: 8000
     ports:
       - 8000:8000
     # this works for hot code reload
     volumes:
-      - ./src:/app/src
+      - ./src:/app
     entrypoint: /entrypoint.sh

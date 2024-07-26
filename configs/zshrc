@@ -1,0 +1,25 @@
+alias ls="ls -la --color"
+export TABSTOP=2
+alias python=python3
+alias gcloud-login='gcloud auth application-default login'
+# filters out all the containers with names that begin with k8s_
+alias rancher-ps='docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Status}}\t{{.Command}}" | awk '\''$3 !~ /k8s_/'\'
+alias go-cloud-sql='docker exec -it $(docker ps -aqf "name=^cloud-sql-client*" | head -1) mysql --database=${1:-mysql}'
+
+export PATH=$PATH:/opt/homebrew/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
+export PATH="$PATH:/opt/homebrew/Cellar/mysql-client/8.3.0/bin"
+
+function agr() { [ -z "$1" ] && { echo "Error: First argument is empty. Exiting gracefully."; return 1; }; ag -0 -l "$1" | xargs -0 perl -pi.bak -e "s/$1/$2/g"; }
+export -f agr 1> /dev/null
+
+# make gclient use numpy
+export CLOUDSDK_PYTHON_SITEPACKAGES=1
+
+# gcp, https://formulae.brew.sh/cask/google-cloud-sdk
+source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/clarkritchie/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)

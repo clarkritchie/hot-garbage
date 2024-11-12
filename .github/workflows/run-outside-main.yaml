@@ -1,0 +1,48 @@
+name: Run a workflow_dispatch Outside of main
+
+#!/usr/bin/env bash
+#
+# Simple and terse test to example to show how to run a GitHub Action outside of the
+#  main branch by simulating "workflow_dispatch" event using the GitHub client
+#
+# Typically, a GHA with a workflow_dispatch only works under two conditions:
+# - It is present in main (default) branch
+# - It is present in some other branch and has already run before <-- this bit is important
+#
+# workflow_dispatch GHAs can be triggered manually in non-main branches as per below.
+#
+# Note that when using the `gh` client, you must have a PAT with these permissions.  Note that this may not be fully accurate.
+#
+# - Read access to administration, code, codespaces lifecycle admin, commit statuses, deployments, and metadata
+# - Read and Write access to actions, secrets, and workflows
+#
+# Note that the GHa must be pushed once with the on push event, after which that can be removed.
+#
+# BRANCH=some/branch
+# gh workflow run run-outside-main.yaml \
+#     --ref ${BRANCH} \
+#     -f foo_field="bar_value"
+#
+
+on:
+  # push:
+  #   branches:
+  #     - some/branch
+  workflow_dispatch:
+    inputs:
+      foo_field:
+        type: string
+        required: true
+        default: "foo_value"
+
+jobs:
+  do-stuff:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stuff
+        run: |
+          echo "the value of foo_field: ${{ inputs.foo_field }}"

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ollama run generate-commit-message:latest "$(git diff HEAD)"

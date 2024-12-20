@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Determine the base branch (main, master, or develop)
+if git show-ref --verify --quiet refs/heads/main; then
+    BASE_BRANCH="main"
+elif git show-ref --verify --quiet refs/heads/master; then
+    BASE_BRANCH="master"
+elif git show-ref --verify --quiet refs/heads/develop; then
+    BASE_BRANCH="develop"
+else
+    echo "Neither 'main', 'master', nor 'develop' branch found."
+    exit 1
+fi
+
+# Get the list of commits between HEAD and the base branch
+COMMITS=$(git rev-list ${BASE_BRANCH}..HEAD)
+
+ollama run tavernari/pull-request-message:latest "$(git show --oneline $COMMITS)"

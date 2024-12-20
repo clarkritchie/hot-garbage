@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ -z $1 ]]; then
+  echo "Must supply a PR ID or link"
+  exit 1
+fi
+
+echo "Reviewing PR $1"
+diff=$(gh pr diff "$1")
+
+ollama run tavernari/pull-request-message:latest "$(git show --oneline $COMMITS)"

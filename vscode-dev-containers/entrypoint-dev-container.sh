@@ -2,12 +2,6 @@
 
 echo "Starting dev container entrypoint script..."
 
-cat << EOF > /test.sh
-#!/usr/bin/env bash
-ping -c 3 lint_array
-EOF
-chmod 755 /test.sh
-
 cat << EOF >> /root/.zshrc
 #
 # -- BEGIN

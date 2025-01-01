@@ -1,6 +1,6 @@
 # Dev Containers
 
-A basic example of how to setup Dev Containers based off Microsoft's Python 3.12 image.
+A basic example of how to setup Dev Containers based off Microsoft's Python 3.12 image.  This [YouTube video](https://www.youtube.com/watch?v=b1RavPr_878) is also a great place to start.
 
 1. Install the VS Code plugin for Dev Containers.
 2. At the root of your project, `mkdir .devcontainer` and inside of that, make a [devcontainer.json](devcontainer.json) file.  Make note of the path for `dockerComposeFile` -- you can put this anywhere, really, even in `.devcontainer` would be fine -- I just happen to to keep mine up one directory.

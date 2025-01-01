@@ -36,9 +36,9 @@ RUN tar -xzvf /tmp/go.tar.gz -C /usr/local
 # RUN echo "--- Golang ---" >> ~/.zshrc
 # RUN echo export GOPRIVATE=xxx >> ~/.zshrc
 RUN echo export PATH=$HOME/go/bin:/usr/local/go/bin:$PATH >> ~/.zshrc
+
 # Make ZSH the default shell for the current user in the container
 # To check that the shell was indeed added: `chsh -l` and you should see it in the  list.
 SHELL ["/bin/zsh", "-c"]
-# RUN chsh -s /usr/bin/zsh
 
 RUN chmod +x /entrypoint.sh

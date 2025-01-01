@@ -4,11 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile.dev-container
     entrypoint: ./entrypoint.sh
-    env_file: .env
-    environment:
-      DD_API_KEY: ${DD_API_KEY}
-      DD_APP_KEY: ${DD_APP_KEY}
-      DD_DASHBOARD_ID: ${DD_DASHBOARD_ID}
+    # customize as required, e.g.
+    # env_file: .env
+    # environment:
+    #  FOO: bar
+    # .config/gcloud maps my GCP credentials into my VS Code container
     volumes:
       - ~/.config/gcloud:/root/.config/gcloud
       - ~/Projects:/workspace:cached

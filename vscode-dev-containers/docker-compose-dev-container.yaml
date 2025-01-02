@@ -17,8 +17,11 @@ services:
     #   UseKeychain yes
     #
     volumes:
+      # GCP credentials
       - ~/.config/gcloud:/root/.config/gcloud
+      # SSH credentials
       - ~/.ssh:/root/.ssh
+      # Change this to whever you have your projects on your host operating system
       - ~/Projects:/workspace:cached
     networks:
       - dev_network

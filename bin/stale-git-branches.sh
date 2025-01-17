@@ -22,4 +22,10 @@ while read -r commit_date branch; do
   if [ "$age_days" -gt ${DAYS_AGO} ]; then
     echo "$commit_date - ${branch#refs/remotes/} is older than ${DAYS_AGO} days (age is $age_days days)"
   fi
+
+  # if [[ $branch == *job* ]]; then
+  #   stripped_branch=${branch#origin/}
+  #   echo "Job branch: $stripped_branch"
+  #   git push origin :$stripped_branch
+  # fi
 done

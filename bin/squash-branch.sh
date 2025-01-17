@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
+set -e
+
 MAIN=${1:-main}
 CURRENT_BRANCH=$(git branch --show-current)
 DATE=$(date -u +"%Y-%m-%d-%H-%M")
 NEW_BRANCH="${CURRENT_BRANCH}-${DATE}"
 
 if [ -n "$(git status --porcelain)" ]; then
-  echo "There are pending commits."
+  echo "There are untracked files or pending commits."
   exit 1
 fi
 
@@ -26,9 +28,14 @@ ${commit_message}
 EOF
 read -p "Press Enter to continue or Ctrl+C to cancel..."
 
-
-cd ..
+echo "Checking out ${MAIN}"
 git checkout ${MAIN}
+
+echo "Making a new branch ${NEW_BRANCH}"
 git checkout -b ${NEW_BRANCH}
+
+echo "Squashing ${CURRENT_BRANCH}"
 git merge --squash ${CURRENT_BRANCH}
+
+echo "Committing"
 git commit -m "${commit_message}"

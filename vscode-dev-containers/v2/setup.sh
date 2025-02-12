@@ -114,11 +114,11 @@ cat <<EOF > ${DEV_CONTAINER_CONFIG}
         "gruntfuggly.todo-tree",
         "linhmtran168.mac-ca-vscode",
         "ms-azuretools.vscode-docker",
-        "ms-kubernetes-tools.vscode-kubernetes-tools"
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
         "ms-python.debugpy",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-vscode-remote.remote-containers"
+        "ms-vscode-remote.remote-containers",
         "ms-vscode.makefile-tools",
         "ms-vscode.remote-repositories",
         "redhat.vscode-yaml",
@@ -131,11 +131,6 @@ cat <<EOF > ${DEV_CONTAINER_CONFIG}
 EOF
 
 # these paths are, obviously, Mac OS specific
-#
-# vscode_root:/workspace is a test to see if that is any
-# different than a normal bind mount, e.g.
-# - ${VSCODE_ROOT}:/workspace-tmp
-#
 echo "🌈 Creating ${DEV_CONTAINER_COMPOSE_CONFIG}"
 cat <<EOF > ${DEV_CONTAINER_COMPOSE_CONFIG}
 services:
@@ -147,7 +142,7 @@ services:
     user: root:root
     volumes:
       - ${HOME}/.config/gcloud:/root/.config/gcloud
-      - vscode_root:/workspace
+      - ${VSCODE_ROOT}:/workspace
       - ${HOME}/.ssh:/mnt/.ssh:ro
       - ${HOME}/.kube:/root/.kube
       - ${HOME}/.gitconfig:/root/.gitconfig
@@ -156,15 +151,6 @@ services:
       - ${HOME}/.docker:/root/.docker:ro
     networks:
       - dev_network
-
-# this is an experiment to see if the binding to the host OS is any faster
-volumes:
-  vscode_root:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${VSCODE_ROOT}
-      o: bind
 
 networks:
   dev_network:
@@ -199,22 +185,36 @@ cat << EOF
 
 ⭐ ⭐ ⭐ --- Final Tips --- ⭐ ⭐ ⭐
 
-- It is helpful to change your VS Code's default terminal from bash to zsh
+- Change your VS Code's default terminal from bash to zsh!
+
 - YES, the confusion between precedence on user settings vs. remote settings
   vs. dev container settings is very real -- see the README, please help
+
+- Rancher Desktop is SLOW to fully start, make sure it's fully up and running
+  else VS Code will probably suggest that you to install Docker Desktop
+
 - Your personal VS Code settings are located in:
 
     - ${HOME}/Library/Application Support/Code/User/settings.json
 
-  Some recommended settings:
+Here are some recommended settings:
 
     - "python.analysis.autoFormatStrings": true,
     - "editor.detectIndentation": true
 
-  Here are some nice terminal colors that you can copy-paste:
+You should use SSH instead of HTTPS for GitHub.  You might also want to put these into your ~/.gitconfig:
+
+[push]
+  autoSetupRemote = true
+[url "git@github.com:"]
+  insteadOf = https://github.com/
+[safe]
+  directory = *
+
+Finally, here are some nice terminal color schemes that you can copy-paste into your personal settings.json:
 
     - https://glitchbone.github.io/vscode-base16-term/#/3024
 
-🤞🏻 🍀 🦄 --- GOOD LUCK! --- 🤞🏻 🍀 🦄
+🤞🏻 🍀 🦄 --- GOOD LUCK! --- 🦄 🍀 🤞🏻
 
 EOF

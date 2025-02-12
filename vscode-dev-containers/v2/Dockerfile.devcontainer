@@ -31,7 +31,6 @@ RUN pip install --upgrade pip
 # isort -- useful for sorting imports
 # lz4 -- is compression lbirary used by Cassandra driver
 # pipreqs -- useful for re-creating requirements.txt from what's actually used in code
-# pre-commit -- see https://stefaniemolin.com/articles/devx/pre-commit/setup-guide/
 # pytz -- useful for timezone stuff
 # ruff is a great python linter
 RUN pip install --upgrade pip
@@ -42,11 +41,12 @@ RUN pip install \
   reindent \
   pytz \
   pipreqs \
-  pre-commit \
   semver
 
+# Misc
 # python -m reindent --help
 # ruamel.yaml -- is a nice for working with YAML because it can preserve sorting
+# pre-commit -- see https://stefaniemolin.com/articles/devx/pre-commit/setup-guide/
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

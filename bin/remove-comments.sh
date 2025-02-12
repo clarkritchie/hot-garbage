@@ -9,4 +9,4 @@ mv $input_file $input_file.bak
 mv $output_file $input_file
 ruff format $input_file
 
-echo "Comments removed and saved to $output_file"
+echo "Comments removed"

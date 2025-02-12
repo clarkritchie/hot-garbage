@@ -58,6 +58,9 @@ fi
 # searching.
 #
 # More info:  https://github.com/microsoft/pylance-release/wiki/Opening-Large-Workspaces-in-VS-Code
+#             https://github.com/microsoft/pylance-release/blob/main/docs/settings/python_analysis_include.md
+#
+# There is also:  "python.analysis.extraPaths:" []
 #
 # python.x.y.z -- This is used for settings that apply globally to the Python
 # extension.
@@ -79,10 +82,10 @@ cat <<EOF > /root/.vscode-server/data/Machine/settings.json
   "python.analysis.diagnosticMode": "openFilesOnly",
   "python.analysis.generateWithTypeAnnotation": true,
   "python.analysis.include": [
-    "**/database/apps",
-    "**/sre/apps",
-    "**/sre/cloud-functions",
-    "**/sre/observability"
+    "**/database/apps/**/*",
+    "**/sre/apps/**/*",
+    "**/sre/cloud-functions/**/*",
+    "**/sre/observability/**/*"
   ],
   "python.defaultInterpreterPath": "/usr/local/bin/python",
   "python.languageServer": "Pylance",

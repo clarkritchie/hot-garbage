@@ -85,7 +85,7 @@ fi
 echo "🌈 Creating ${DEV_CONTAINER_CONFIG}"
 cat <<EOF > ${DEV_CONTAINER_CONFIG}
 {
-  "name": "Dexcom Database Python 3.12 Dev Container",
+  "name": "Python 3.12 Dev Container",
   "dockerComposeFile": "${DEV_CONTAINER_COMPOSE_CONFIG}",
   "service": "dev_container",
   "workspaceFolder": "/workspace",

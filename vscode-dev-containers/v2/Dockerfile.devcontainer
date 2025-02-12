@@ -10,11 +10,6 @@ RUN apt-get install silversearcher-ag
 RUN echo 'deb [trusted=yes] http://ftp.de.debian.org/debian buster main' | tee -a vi /etc/apt/sources.list
 RUN apt-get update && apt-get install -y wget ruby ruby-dev rubygems
 
-# This is a workaround for the Cisco certificate issue on Nitesh's laptop
-# The Cisco certificate must be trusted for any additional downloads to succeed
-COPY cisco.pem /usr/local/share/ca-certificates/cisco.crt
-RUN update-ca-certificates --verbose
-
 # The version of kubectx via apt is maybe old, and it does not support the -c argument -- this version does
 RUN curl -sSL https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubectx_v0.9.4_linux_x86_64.tar.gz -o /tmp/kubectx.tar.gz
 RUN tar -xzf /tmp/kubectx.tar.gz -C /tmp && mv /tmp/kubectx /usr/local/bin/

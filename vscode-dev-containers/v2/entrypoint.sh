@@ -82,10 +82,7 @@ cat <<EOF > /root/.vscode-server/data/Machine/settings.json
   "python.analysis.diagnosticMode": "openFilesOnly",
   "python.analysis.generateWithTypeAnnotation": true,
   "python.analysis.include": [
-    "**/database/apps/**/*",
-    "**/sre/apps/**/*",
-    "**/sre/cloud-functions/**/*",
-    "**/sre/observability/**/*"
+    # "**/foo/apps/**/*",
   ],
   "python.defaultInterpreterPath": "/usr/local/bin/python",
   "python.languageServer": "Pylance",

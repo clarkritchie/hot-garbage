@@ -12,6 +12,10 @@ branches=$(git branch --format='%(refname:short)')
 
 # Loop through each branch
 for branch in $branches; do
+  if [ "$branch" == "master" ] || [ "$branch" == "main" ]; then
+    echo "Skipping branch '$branch'"
+    continue
+  fi
   new_branch="${branch}${suffix}"
   read -p "Do you want to rename branch '$branch' to '$new_branch' ? (y/n) " answer
   if [ "$answer" == "y" ]; then

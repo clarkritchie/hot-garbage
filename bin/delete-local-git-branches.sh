@@ -22,7 +22,7 @@ for branch in $branches; do
   branch_age=$(( (current_date - last_commit_date) / 86400 ))
 
   # Check if the branch is older than X days
-  if [ $branch_age -gt 7 ]; then
+  if [ $branch_age -gt ${1:-7} ]; then
     echo "Branch '$branch' is $branch_age days old."
     read -p "Do you want to delete this branch? (y/n) " answer
     if [ "$answer" = "y" ]; then

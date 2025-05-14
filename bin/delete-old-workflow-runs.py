@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
+#
+# quick and dirty script to delete old workflow runs from a GitHub repository
+# no tests, no linting, no documentation, no guarantees, no problems
+#
+
 import requests
 import datetime
 import os
 
 GH_TOKEN = os.getenv("GH_TOKEN")
-REPO_OWNER = "dexcom-inc"
-REPO_NAME = "sre"
+REPO_OWNER = os.getenv("REPO_OWNER")
+REPO_NAME = os.getenv("REPO_NAME")
 DAYS_OLD = 180
 
 date_threshold = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
@@ -42,13 +47,12 @@ def delete_old_runs(workflow_runs):
         run_id = run["id"]
         print(f"Created at: {created_at}, Date threshold: {date_threshold}")
         if created_at < date_threshold:
-            print(f"Deleting run {run_id} created at {created_at}")
+            print(f"Deleting run {run_id}, created at {created_at}")
             url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/actions/runs/{run_id}"
             headers = {"Authorization": f"token {GH_TOKEN}"}
             requests.delete(url, headers=headers)
         else:
-            print(f"Run {run_id} is not older than {DAYS_OLD} days, skipping deletion.")
-            print(f"Run {run_id} is not older than {DAYS_OLD} days, skipping deletion.")
+            print(f"Run {run_id} is not older than {DAYS_OLD} days, skipping deletion")
 
 
 workflow_runs = fetch_workflow_runs()

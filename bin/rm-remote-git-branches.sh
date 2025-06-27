@@ -4,12 +4,15 @@ PATTERN=$1
 BRANCH_AGE=${2:-7}
 
 if [[ -z "${PATTERN}" ]]; then
-  echo "Usage: $0 [branch_age_in_days] [pattern]"
-  echo "Example: $0 30 'feature/.*'"
-  echo "         $0 14 'hotfix/.*'"
-  echo "         $0 7 'bugfix-.*'"
+  echo "Usage: $0 [pattern] [branch_age_in_days]"
+  echo "Example: $0 'feature/.*' 30"
+  echo "         $0 'hotfix/.*' 14"
+  echo "         $0 'bugfix-.*' 7"
+  echo "         $0 '.*' 30          # Evaluate ALL remote branches"
+  echo "         $0 '*' 30           # Evaluate ALL remote branches"
   echo ""
   echo "Pattern supports regex matching for remote branch names"
+  echo "Use '.*' or '*' to evaluate all remote branches"
   exit 1
 fi
 
@@ -23,14 +26,41 @@ git fetch --prune
 current_date=$(date +%s)
 
 # List all remote branches and filter by pattern
-branches=$(git branch -r --format='%(refname:short)' | grep -E "^origin/${PATTERN}" | sed 's/origin\///')
+if [[ "${PATTERN}" == "*" || "${PATTERN}" == ".*" ]]; then
+  echo "Evaluating ALL remote branches..."
+  branches=$(git branch -r --format='%(refname:short)' | grep -v "origin/HEAD" | sed 's/origin\///')
+else
+  branches=$(git branch -r --format='%(refname:short)' | grep -E "^origin/${PATTERN}" | sed 's/origin\///')
+fi
 
 if [[ -z "$branches" ]]; then
-  echo "No remote branches found matching pattern '${PATTERN}'"
+  if [[ "${PATTERN}" == "*" || "${PATTERN}" == ".*" ]]; then
+    echo "No remote branches found (excluding HEAD)"
+  else
+    echo "No remote branches found matching pattern '${PATTERN}'"
+  fi
   exit 0
 fi
 
 skip_branches=("main" "master" "stage" "dev" "HEAD")
+
+# Add extra confirmation for wildcard patterns
+if [[ "${PATTERN}" == "*" || "${PATTERN}" == ".*" ]]; then
+  echo ""
+  echo "⚠️  WARNING: You are about to evaluate ALL remote branches for deletion!"
+  echo "This will check $(echo "$branches" | wc -w) remote branches (excluding protected branches)."
+  echo ""
+  read -p "Are you sure you want to continue? (y/n) " confirm
+  if [[ "$confirm" != "y" ]]; then
+    echo "Operation cancelled."
+    exit 0
+  fi
+  echo ""
+fi
+
+echo "Found $(echo "$branches" | wc -w) remote branches to evaluate:"
+echo "$branches" | tr ' ' '\n' | sed 's/^/  - /'
+echo ""
 
 for branch in $branches; do
   # Check if the branch is in the skip list

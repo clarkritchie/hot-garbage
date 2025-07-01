@@ -1,3 +1,3 @@
-# etc
+# Hot Garbage
 
-A place for my personal hot garbage.
+This repo is a place for my personal hot garbage.

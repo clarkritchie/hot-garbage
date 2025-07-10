@@ -1,22 +1,52 @@
 #!/usr/bin/env zsh
 #
-# Clones the first cronjob in the current namespace to a job
+# Clones a selected cronjob in the current namespace to a job
 # This is useful for testing cronjobs without waiting for the schedule
 # to trigger as the job will run immediately.
 # It will delete any previous job with the same name.
 #
 
-echo "Cloning the first cronjob in the current namespace to a job"
+echo "Clone Cronjob to Job"
+echo "===================="
 
-export CRON_JOB=$(kubectl get cronjob -o custom-columns=NAME:.metadata.name --no-headers)
-if [[ -z "$CRON_JOB" ]]; then
-    echo "No cronjob found in the current namespace"
+# Get current namespace
+export NS=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+if [[ -z "$NS" ]]; then
+    NS="default"
+fi
+echo "Current namespace: $NS"
+echo
+
+# Get all cronjobs
+CRONJOBS=($(kubectl get cronjob -o custom-columns=NAME:.metadata.name --no-headers 2>/dev/null))
+if [[ ${#CRONJOBS[@]} -eq 0 ]]; then
+    echo "No cronjobs found in namespace '$NS'"
     exit 1
 fi
 
-export NS=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+# Display cronjobs with numbers
+echo "Available cronjobs:"
+for i in {1..${#CRONJOBS[@]}}; do
+    echo "  $i) ${CRONJOBS[$i]}"
+done
+echo
+
+# Get user selection
+while true; do
+    read -r "selection?Select a cronjob to clone (1-${#CRONJOBS[@]}): "
+    
+    # Validate selection
+    if [[ "$selection" =~ ^[0-9]+$ ]] && [[ "$selection" -ge 1 ]] && [[ "$selection" -le ${#CRONJOBS[@]} ]]; then
+        export CRON_JOB=${CRONJOBS[$selection]}
+        break
+    else
+        echo "Invalid selection. Please enter a number between 1 and ${#CRONJOBS[@]}."
+    fi
+done
+
 export JOB="clone-of-${CRON_JOB}"
-echo "Cloning $CRON_JOB as $JOB in namespace $NS"
+echo
+echo "Cloning cronjob '$CRON_JOB' as job '$JOB' in namespace '$NS'"
 
 # delete the previous clone, if it exists
 kubectl delete job.batch/${JOB} --ignore-not-found

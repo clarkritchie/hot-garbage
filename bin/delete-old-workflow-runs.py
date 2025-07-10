@@ -8,11 +8,28 @@
 import requests
 import datetime
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 GH_TOKEN = os.getenv("GH_TOKEN")
 REPO_OWNER = os.getenv("REPO_OWNER")
 REPO_NAME = os.getenv("REPO_NAME")
-DAYS_OLD = 180
+DAYS_OLD = int(os.getenv("DAYS_OLD", "180"))
+
+# Validate required environment variables
+if not all([GH_TOKEN, REPO_OWNER, REPO_NAME]):
+    print("Error: Missing required environment variables.")
+    print(
+        "Please set GH_TOKEN, REPO_OWNER, and REPO_NAME in your .env file or environment."
+    )
+    print("\nExample .env file:")
+    print("GH_TOKEN=your_github_token_here")
+    print("REPO_OWNER=your_github_username_or_org")
+    print("REPO_NAME=your_repository_name")
+    print("DAYS_OLD=180")
+    exit(1)
 
 date_threshold = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
     days=DAYS_OLD

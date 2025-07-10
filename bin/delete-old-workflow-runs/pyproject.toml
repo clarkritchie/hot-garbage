@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "delete-old-workflow-runs"
+version = "1.0.0"
+description = "Quick and dirty script to delete old workflow runs from a GitHub repository"
+authors = ["Clark Ritchie"]
+readme = "README.md"
+packages = [{include = "delete_old_workflow_runs.py"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.31.0"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^4.0.0"
+ruff = "^0.8.0"
+
+[tool.poetry.scripts]
+delete-old-workflow-runs = "delete_old_workflow_runs:main"
+
+[tool.ruff]
+line-length = 140
+exclude = [
+    "deprecated/**",
+    "__pycache__",
+    ".venv",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "E501",  # Line too long
+    "D103",  # Missing function or method docstring
+    "D101",  # Missing class docstring
+    "D100",  # Missing module docstring
+    "G001",  # Use lazy % formatting in logging functions
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

@@ -1,5 +1,4 @@
 #!/usr/bin/env zsh
-#!/usr/bin/env zsh
 
 # Use first argument as PR message if provided
 pr_message="$1"
@@ -27,8 +26,9 @@ echo "1) Nitesh"
 echo "2) Sai"
 echo "3) Robby"
 echo "4) Ashok"
-echo "5) None"
-echo "6) Custom (enter manually)"
+echo "5) Brandon"
+echo "6) None"
+echo "7) Custom (enter manually)"
 read "reviewer_choice?Choose option (1-6) [default: 1]: "
 reviewer_choice="${reviewer_choice:-1}"
 
@@ -46,9 +46,12 @@ case "$reviewer_choice" in
     reviewers="ashok-danaraddi"
     ;;
   5)
-    reviewers=""
+    reviewers="BrandonCsSanders"
     ;;
   6)
+    reviewers=""
+    ;;
+  7)
     read "reviewers?Enter reviewers (comma-separated): "
     ;;
   *)

@@ -56,7 +56,7 @@ kubectl create job \
     --namespace ${NS}
 
 # loop until the pod is ready, with a timeout
-MAX_RETRIES=30  # Maximum number of retries (30 retries * 2 seconds = 1 minute timeout)
+MAX_RETRIES=90  # Maximum number of retries (30 retries * 2 seconds = 1 minute timeout)
 RETRY_COUNT=0
 while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
   pod_status=$(kubectl get pods | grep clone | awk '{print $2}')

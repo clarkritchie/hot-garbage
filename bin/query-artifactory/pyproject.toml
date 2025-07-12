@@ -1,0 +1,57 @@
+# this was auto-generated
+[tool.ruff]
+extend = "../../pyproject.toml"
+
+[tool.poetry]
+package-mode = false
+
+[[tool.poetry.source]]
+name = "pypi"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "dexcom-pypi-dev-local"
+url = "https://dexcom.jfrog.io/artifactory/api/pypi/dexcom-pypi-dev-local/simple"
+priority = "primary"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+sre-libs = { version = ">=0.2.1", source = "dexcom-pypi-dev-local" }
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.6.9"
+pytest = "^8.3.4"
+
+[project]
+name = "query-artifactory"
+version = "1.0.0"
+description = "Query JFrog Artifactory for Docker images, Helm charts, and PyPI packages"
+authors = []
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "sre-libs (==0.2.1)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    "*/tests/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]

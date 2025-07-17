@@ -12,9 +12,9 @@ if [[ -z "$pr_message" ]]; then
   fi
 fi
 
-# Prompt for draft or regular PR
-read "draft_choice?Create as draft PR? (y/N): "
-if [[ "$draft_choice" =~ "^[Yy]$" ]]; then
+# Prompt for draft or regular PR, default is yes
+read -r "draft_choice?Create as draft PR? (Y/n): "
+if [[ -z "$draft_choice" || "$draft_choice" =~ ^[Yy]$ ]]; then
   draft_flag="--draft"
 else
   draft_flag=""

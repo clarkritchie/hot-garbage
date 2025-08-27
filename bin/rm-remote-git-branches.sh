@@ -71,7 +71,7 @@ for branch in $branches; do
 
   # Get the last commit date of the remote branch in seconds since epoch
   last_commit_date=$(git log -1 --format=%ct origin/$branch 2>/dev/null)
-  
+
   # Skip if we can't get the commit date (branch might not exist)
   if [[ -z "$last_commit_date" ]]; then
     echo "Skipping branch '$branch' - unable to get commit date"
@@ -83,6 +83,7 @@ for branch in $branches; do
 
   # Check if the branch is older than X days
   if [ $branch_age -gt ${BRANCH_AGE} ]; then
+  # \033[0;32mIAM Policy\033[0m
     echo "Remote branch 'origin/$branch' is $branch_age days old."
     read -p "Do you want to delete this remote branch? (y/n) " answer
     if [ "$answer" = "y" ]; then

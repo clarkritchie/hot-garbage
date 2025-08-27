@@ -64,9 +64,12 @@ esac
 # Prompt for base branch
 echo "Select base branch:"
 echo "1. main"
-echo "2. stage"
-echo "3. other"
-read "branch_choice?Enter choice [1-3, default: 1]: "
+echo "2. dev"
+echo "3. stage"
+echo "4. prod"
+echo "5. master"
+echo "6. other"
+read "branch_choice?Enter choice [1-6], default: 1]: "
 branch_choice="${branch_choice:-1}"
 
 case $branch_choice in
@@ -74,9 +77,18 @@ case $branch_choice in
     base_branch="main"
     ;;
   2)
-    base_branch="stage"
+    base_branch="dev"
     ;;
   3)
+    base_branch="stage"
+    ;;
+  4)
+    base_branch="prod"
+    ;;
+  5)
+    base_branch="master"
+    ;;
+  6)
     read "base_branch?Enter custom base branch name: "
     ;;
   *)
@@ -93,7 +105,5 @@ else
   gh pr create --title="$pr_message" --body="$pr_message" --base="$base_branch" $draft_flag
 fi
 
-read -r "open_browser?Open PR in browser? (Y/n): "
-if [[ -z "$open_browser" || "$open_browser" =~ ^[Nn]$ ]]; then
-  gh pr view --web
-fi
+# open in browser
+gh pr view --web

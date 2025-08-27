@@ -27,7 +27,16 @@ for branch in $branches; do
 
   # Check if the branch is older than X days
   if [ $branch_age -gt ${BRANCH_AGE} ]; then
-    echo "Branch '$branch' is $branch_age days old."
+    # echo "Branch '$branch' is $branch_age days old."
+    # Red 31
+    # Green 32
+    # Yellow 33
+    # Blue 34
+    # Magenta 35
+    # Cyan 36
+    # White 37
+    echo -e "Branch '\033[0;32m$branch\033[0m' is $branch_age days old."
+
     read -p "Do you want to delete this branch? (y/n) " answer
     if [ "$answer" = "y" ]; then
       git branch -D $branch

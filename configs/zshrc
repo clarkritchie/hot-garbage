@@ -26,7 +26,7 @@ path=(
   /opt/homebrew/share/google-cloud-sdk/bin
   $HOME/Projects/dexcom-inc/sre/etc
   $HOME/Projects/clarkritchie/hot-garbage/bin
-  $(go env GOPATH)/bin
+  # $(go env GOPATH)/bin
   /opt/homebrew/Cellar/mysql-client/8.3.0/bin
   /opt/homebrew/opt/libpq/bin
   $HOME/.local/bin
@@ -59,6 +59,17 @@ new-zshrc() {
   # redirect to silence command not found with path
   cp "$src" "$dest" && source "$dest" 2>/dev/null
   cp "$src" "${HOME}/$backup1"
+}
+
+# Kube PS1 prompt
+# https://github.com/jonmosco/kube-ps1
+
+# Function to show KUBECONFIG status in prompt if $KUBECONFIG is currently pointed elsewhere
+kubeconfig-status() {
+  local default_config="$HOME/.kube/config"
+  if [[ -n "$KUBECONFIG" && "$KUBECONFIG" != "$default_config" ]]; then
+    echo " ✴️ Alt KUBECONFIG"
+  fi
 }
 
 # --- K8s Shortcuts ---
@@ -96,6 +107,6 @@ done
 eval "$(rbenv init -)"
 
 # --- Prompt Customization ---
-PROMPT='$(kube_ps1)$(kubeconfig_status) '$PROMPT
+PROMPT='$(kube_ps1)$(kubeconfig-status) '$PROMPT
 
 # --- End of zshrc ---

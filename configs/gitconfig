@@ -1,10 +1,70 @@
 [user]
-	name = Clark Ritchie
-	email = xxx
+  name = Clark Ritchie
+  email = clark.ritchie@dexcom.com
+  signingkey = 10817C9262FD03E4342A8116A729DF9B41322CA2
 [push]
-	autoSetupRemote = true
+  autoSetupRemote = true
+  default = current
 [alias]
-	br = "!f() { git checkout -b clark/$1; }; f"
-	p = push
+  # co = "!f() { git checkout -b clark/$1; }; f"
+  # co = "!sh -c 'dict=/usr/share/dict/words; words=($(cat \"$dict\" | awk \"{print tolower(\\$0)}\" | sort -R | head -n 2)); name=\"clark/${words[0]}-${words[1]}\"; git checkout -b \"$name\"'"
+  # co = "!f() { mo=$(date +"%b" | tr '[:upper:]' '[:lower:]') && day=$(date '+%d') && git checkout -b clark/${mo}-${day}-$1; }; f"
+  co = "!f() { \
+  if [ \"$1\" = \"main\" ]; then \
+    git checkout main; \
+  else \
+    mo=$(date +\"%b\" | tr '[:upper:]' '[:lower:]'); \
+    day=$(date '+%d'); \
+    git checkout -b clark/${mo}-${day}-$1; \
+  fi; \
+  }; f"
+  p = push
+  oops = reset --hard HEAD
+  bra = branch --format=\"%(refname:short)\"
+  check = !git status --porcelain | grep \"^??\" && echo \"Warning: Untracked files found!\" || echo \"No untracked files.\"
+  commitnv = commit --no-verify
+  # recent-tags = "!git ls-remote --tags origin | awk -F/ '{print $NF}' | sort -V | tail -n 10"
+  recent-tags = "!git fetch --tags && git for-each-ref --sort=-creatordate --format='%(creatordate:format:%Y-%m-%d %H:%M) %(refname:short)' refs/tags | head -n 10"
+        minor-fix = commit -m 'Minor fixes -- i.e. code consistency, linting, small bugs, tests and/or documentation'
+  experiment = commit -m 'Experimenting... :test_tube:'
+  derp = commit -m 'Whoops :see_no_evil:' 
+  bugs = commit -m 'A small bugfix or two :bug:'
+  wip = commit -m 'This is work in progress :safety_vest:'
+  docs = commit -m 'Documentation :pencil2:'
+  hmmm = commit -m 'Debugging things :monocle_face:'
+  add-tests = commit -m 'Tests tests tests :test_tube:'
+  trigger-ci = commit -m 'Trigger CI-CD' --allow-empty
+  dead = commit -m 'Removes old and dead code :coffin:'
+  clean = status --porcelain | grep '^??' | cut -c4- | xargs rm -rf
+
+[pull]
+  rebase = true
+[url "git@github.com:"]
+  insteadOf = https://github.com/
 [core]
-	pager = less -F -X
+    pager = delta
+  editor = vim
+    # pager = less -F -X
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true    # use n and N to move between diff sections
+    # delta detects terminal colors automatically; set one of these to disable auto-detection
+    # dark = true
+    # light = true
+[merge]
+    conflictstyle = diff3
+[diff]
+    colorMoved = default
+[protocol "file"]
+  allow = always
+[safe]
+    directory = *
+[commit]
+  gpgsign = true
+[fetch]
+  prune = true
+[rebase]
+  autosquash = true
+[help]
+  autocorrect = 1

@@ -35,20 +35,22 @@ path=(
 export PATH
 
 # --- Aliases ---
-alias ls="ls -la --color"
-alias h='history'
+alias alt-kubeconfig='export KUBECONFIG=~/.kube/config-alt'
+alias chart-bump="$HOME/Projects/clarkritchie/hot-garbage/bin/bump-helm-chart-version.zsh"
+alias create-pr='create-pr.zsh'
+alias current-tag='git describe --tags'
+alias fix-whitespace="sed -i '' 's/[[:space:]]*$//' $1"
+alias get-argo-secret='k get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data}" | jq -r '\''to_entries[] | "\(.key): \(.value | @base64d)"'\'
 alias git-sha='git rev-parse --short HEAD'
 alias git-tags='git fetch origin --tags && git tag --list --sort=creatordate | tail -1'
-alias current-tag='git describe --tags'
+alias go-database='cd ~/Projects/dexcom-inc/database'
 alias go-sre='cd ~/Projects/dexcom-inc/sre'
 alias go-sre-libs='cd ~/Projects/dexcom-inc/sre-libs'
-alias go-database='cd ~/Projects/dexcom-inc/database'
-alias chart-bump="$HOME/Projects/clarkritchie/hot-garbage/bin/bump-helm-chart-version.zsh"
-alias run-porcelain="git status --porcelain | grep '^??' | cut -c4- | xargs rm -rf"
-alias fix-whitespace="sed -i '' 's/[[:space:]]*$//' $1"
-alias alt-kubeconfig='export KUBECONFIG=~/.kube/config-alt'
-alias kubeconfig='unset KUBECONFIG'
+alias h='history'
+alias ls="ls -la --color"
+alias no-alt-kubeconfig='unset KUBECONFIG'
 alias rm-bak-files="find . -name '*.bak' -exec rm -f {} \;"
+alias run-porcelain="git status --porcelain | grep '^??' | cut -c4- | xargs rm -rf"
 
 # --- Functions ---
 new-zshrc() {
@@ -59,6 +61,10 @@ new-zshrc() {
   # redirect to silence command not found with path
   cp "$src" "$dest" && source "$dest" 2>/dev/null
   cp "$src" "${HOME}/$backup1"
+}
+
+kdec(){
+   kubectl get secret $1 -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
 }
 
 # Kube PS1 prompt

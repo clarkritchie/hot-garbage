@@ -68,18 +68,14 @@ def fetch_workflow_runs(gh_token, repo_owner, repo_name, workflow_filter=None):
     return workflow_runs
 
 
-def delete_old_runs(workflow_runs, gh_token, repo_owner, repo_name, date_threshold, days_old):
-    for run in workflow_runs:
-        created_at = datetime.datetime.strptime(run["created_at"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+def delete_runs(runs_to_delete, gh_token, repo_owner, repo_name):
+    """Deletes a list of workflow runs."""
+    for run in runs_to_delete:
         run_id = run["id"]
-        print(f"Created at: {created_at}, Date threshold: {date_threshold}") if extra_debug else None
-        if created_at < date_threshold:
-            print(f"Deleting run {run_id}, created at {created_at}")
-            url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}"
-            headers = {"Authorization": f"token {gh_token}"}
-            requests.delete(url, headers=headers)
-        else:
-            print(f"Run {run_id} is not older than {days_old} days, skipping deletion") if extra_debug else None
+        print(f"Deleting run {run_id}, created at {run['created_at']}")
+        url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{run_id}"
+        headers = {"Authorization": f"token {gh_token}"}
+        requests.delete(url, headers=headers)
 
 
 def main():
@@ -125,7 +121,7 @@ def main():
 
     date_threshold = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days_old)
 
-    if workflow_filter:
+    if workflow_filter is not None:
         print(f"Deleting workflow runs older than {days_old} days from {repo_owner}/{repo_name} for workflow: {workflow_filter}")
     else:
         print(f"Deleting workflow runs older than {days_old} days from {repo_owner}/{repo_name}")
@@ -133,8 +129,24 @@ def main():
 
     workflow_runs = fetch_workflow_runs(gh_token, repo_owner, repo_name, workflow_filter)
     print(f"Fetched {len(workflow_runs)} workflow runs.")
-    delete_old_runs(workflow_runs, gh_token, repo_owner, repo_name, date_threshold, days_old)
+    
+    runs_to_delete = []
+    for run in workflow_runs:
+        created_at = datetime.datetime.strptime(run["created_at"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+        if created_at < date_threshold:
+            runs_to_delete.append(run)
 
+    if not runs_to_delete:
+        print("\nNo workflow runs found older than the threshold. Nothing to delete.")
+        exit(0)
+
+    print(f"\nFound {len(runs_to_delete)} workflow run(s) to delete.")
+    confirm = input("Are you sure you want to permanently delete these workflow runs? (yes/no): ")
+    if confirm.lower() != 'yes':
+        print("Deletion cancelled by user.")
+        exit(0)
+
+    delete_runs(runs_to_delete, gh_token, repo_owner, repo_name)
 
 if __name__ == "__main__":
     main()

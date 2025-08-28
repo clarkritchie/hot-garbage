@@ -5,64 +5,97 @@ pr_message="$1"
 
 # Prompt if PR message is not provided
 if [[ -z "$pr_message" ]]; then
-  read "pr_message?Enter PR title/body: "
+  # Get the last commit message as default
+  last_commit_message=$(git log -1 --pretty=format:"%s")
+  read "pr_message?Enter PR title/body [default: $last_commit_message]: "
   if [[ -z "$pr_message" ]]; then
-    echo "Error: Title/body cannot be empty."
-    return 1
+    pr_message="$last_commit_message"
   fi
 fi
 
-# Prompt for draft or regular PR
-read "draft_choice?Create as draft PR? (y/N): "
-if [[ "$draft_choice" =~ "^[Yy]$" ]]; then
-  draft_flag="--draft"
-else
+# Prompt for draft or regular PR, default is no
+read -r "draft_choice?Create as draft PR? (Y/n): "
+if [[ -z "$draft_choice" || "$draft_choice" =~ ^[Nn]$ ]]; then
   draft_flag=""
+else
+  draft_flag="--draft"
 fi
 
 # Prompt for reviewers
 echo "Select reviewers:"
-echo "1) Nitesh"
-echo "2) Sai"
-echo "3) Robby"
-echo "4) Ashok"
-echo "5) Brandon"
-echo "6) None"
-echo "7) Custom (enter manually)"
-read "reviewer_choice?Choose option (1-6) [default: 1]: "
+echo "1) None"
+echo "2) Nitesh"
+echo "3) Sai"
+echo "4) Robby"
+echo "5) Ashok"
+echo "6) Brandon"
+echo "7) Enter other name"
+read "reviewer_choice?Choose option (1-7) [default: 1]: "
 reviewer_choice="${reviewer_choice:-1}"
 
 case "$reviewer_choice" in
   1)
-    reviewers="nxk0122"
+    reviewers=""
     ;;
   2)
-    reviewers="sainathvadyala"
+    reviewers="nxk0122"
     ;;
   3)
-    reviewers="dexcom-robby"
+    reviewers="sainathvadyala"
     ;;
   4)
-    reviewers="ashok-danaraddi"
+    reviewers="dexcom-robby"
     ;;
   5)
-    reviewers="BrandonCsSanders"
+    reviewers="ashok-danaraddi"
     ;;
   6)
-    reviewers=""
+    reviewers="BrandonCsSanders"
     ;;
   7)
     read "reviewers?Enter reviewers (comma-separated): "
     ;;
   *)
-    echo "Invalid choice, defaulting to nxk0122"
-    reviewers="nxk0122"
+    echo "Invalid choice, defaulting to none"
+    reviewers=""
     ;;
 esac
 
 # Prompt for base branch
-read "base_branch?Enter base branch [default: main]: "
-base_branch="${base_branch:-main}"
+echo "Select base branch:"
+echo "1. main"
+echo "2. dev"
+echo "3. stage"
+echo "4. prod"
+echo "5. master"
+echo "6. other"
+read "branch_choice?Enter choice [1-6], default: 1]: "
+branch_choice="${branch_choice:-1}"
+
+case $branch_choice in
+  1)
+    base_branch="main"
+    ;;
+  2)
+    base_branch="dev"
+    ;;
+  3)
+    base_branch="stage"
+    ;;
+  4)
+    base_branch="prod"
+    ;;
+  5)
+    base_branch="master"
+    ;;
+  6)
+    read "base_branch?Enter custom base branch name: "
+    ;;
+  *)
+    echo "Invalid choice, defaulting to main"
+    base_branch="main"
+    ;;
+esac
 
 # Commit and create PR
 git commit --no-verify -m "$pr_message"
@@ -72,3 +105,5 @@ else
   gh pr create --title="$pr_message" --body="$pr_message" --base="$base_branch" $draft_flag
 fi
 
+# open in browser
+gh pr view --web

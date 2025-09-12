@@ -63,6 +63,59 @@ new-zshrc() {
   cp "$src" "${HOME}/$backup1"
 }
 
+
+# new-configs() {
+#   typeset -A config_files
+#   # Assign without quotes to avoid scalar interpretation
+#   config_files=(
+#     $HOME/Projects/clarkritchie/hot-garbage/configs/gitconfig $HOME/.gitconfig
+#     $HOME/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace $HOME/Projects/Projects_main.code-workspace
+#   )
+
+
+#   echo "DEBUG: src='$src'"
+#   echo "DEBUG: keys=${(k)config_files}"
+
+#   for key value in ${(kv)config_files}; do
+#     echo "PAIR: '$key' ➡️ '$value'"
+#   done
+
+
+#   # for src in ${(k)config_files}; do
+#   #   local dest="${config_files[$src]}"
+#   #   echo "$src ➡️ $dest"
+#   #   if [[ -f "$src" ]]; then
+#   #     cp "$src" "$dest"
+#   #     echo "✅ Copied $(basename "$src") to $dest"
+#   #   else
+#   #     echo "⚠️  Warning: $src not found"
+#   #   fi
+#   # done
+# }
+
+temp_file=$(mktemp)
+cat <<EOF > "$temp_file"
+#!/usr/bin/env python3
+import os
+import shutil
+
+config_files = {
+    os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/gitconfig"): os.path.expanduser("~/.gitconfig"),
+    os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace"): os.path.expanduser("~/Projects/Projects_main.code-workspace"),
+}
+
+for src, dest in config_files.items():
+    print(f"{src} ➡️ {dest}")
+    if os.path.isfile(src):
+        shutil.copy2(src, dest)
+        print(f"✅ Copied {os.path.basename(src)} to {dest}")
+    else:
+        print(f"⚠️  Warning: {src} not found")
+EOF
+chmod +x "$temp_file"
+alias new-configs="python3 $temp_file"
+
+# Function to decode and print all keys/values from a Kubernetes secret
 kdec(){
    kubectl get secret $1 -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
 }
@@ -91,7 +144,7 @@ kgo() {
   echo "Getting a shell in $pod"
   kubectl exec --stdin --tty "$pod" -- /bin/bash
 }
-# ...other k8s functions and aliases...
+alias kevents='kubectl get events --sort-by=".metadata.creationTimestamp"'
 
 # --- OS-Specific Aliases ---
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -114,5 +167,29 @@ eval "$(rbenv init -)"
 
 # --- Prompt Customization ---
 PROMPT='$(kube_ps1)$(kubeconfig-status) '$PROMPT
+
+# iTerm2 profile switcher
+typeset -a ITERM_PROFILES
+ITERM_PROFILES=(
+  "Default"
+  "idleToes"
+  "ToyChest"
+  "GruvboxDark"
+  "Purple Rain"
+  "MaterialDark"
+  "FrontEndDelight"
+  "Jackie Brown"
+)
+
+
+# Pick a random profile
+setopt KSH_ARRAYS
+index=$((RANDOM % ${#ITERM_PROFILES[@]}))
+random_profile=${ITERM_PROFILES[$index]}
+# Show the profile name scrolling across the terminal
+# echo "Using iTerm2 Profile: $random_profile"
+# Apply the profile
+echo -e "\033]50;SetProfile=$random_profile\a"
+unsetopt KSH_ARRAYS
 
 # --- End of zshrc ---

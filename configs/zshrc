@@ -99,12 +99,15 @@ cat <<EOF > "$temp_file"
 import os
 import shutil
 
-config_files = {
-    os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/gitconfig"): os.path.expanduser("~/.gitconfig"),
-    os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace"): os.path.expanduser("~/Projects/Projects_main.code-workspace"),
-}
+# Use a list of tuples to handle multiple destinations for the same source
+config_files = [
+    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md"), os.path.expanduser("~/Projects/dexcom-inc/sre/.github")),
+    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md"), os.path.expanduser("~/Projects/dexcom-inc/database/.github")),
+    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/gitconfig"), os.path.expanduser("~/.gitconfig")),
+    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace"), os.path.expanduser("~/Projects/Projects_main.code-workspace")),
+]
 
-for src, dest in config_files.items():
+for src, dest in config_files:
     print(f"{src} ➡️ {dest}")
     if os.path.isfile(src):
         shutil.copy2(src, dest)
@@ -147,11 +150,31 @@ kgo() {
 alias kevents='kubectl get events --sort-by=".metadata.creationTimestamp"'
 
 # --- OS-Specific Aliases ---
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  alias argo-port-forward='k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) & sleep 2 && open http://localhost:8082'
-else
-  alias argo-port-forward='k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) & sleep 2 && xdg-open http://localhost:8082'
-fi
+
+# if [[ "$OSTYPE" == "darwin"* ]]; then
+#   alias argo-port-forward='k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) & sleep 2 && open http://localhost:8082'
+# else
+#   alias argo-port-forward='k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) & sleep 2 && xdg-open http://localhost:8082'
+# fi
+
+argo-port-forward() {
+  # Check if port-forward to localhost:8082 is already running
+  RUNNING=$(pgrep -f "kubectl port-forward svc/argocd-platform-server 8082:80 -n argocd")
+  echo "Running is: ${RUNNING}"
+  if [[ -n "$RUNNING" ]]; then
+    echo "Port-forward to localhost:8082 is already running. Exiting."
+    return 1
+  fi
+
+  # Run port-forward and open browser based on OS
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) &
+    sleep 2 && open http://localhost:8082
+  else
+    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) &
+    sleep 2 && xdg-open http://localhost:8082
+  fi
+}
 
 # --- Miscellaneous ---
 export TABSTOP=2
@@ -172,7 +195,8 @@ PROMPT='$(kube_ps1)$(kubeconfig-status) '$PROMPT
 typeset -a ITERM_PROFILES
 ITERM_PROFILES=(
   "Default"
-  "idleToes"
+  # "idleToes"
+  "Fairyfloss"
   "ToyChest"
   "GruvboxDark"
   "Purple Rain"

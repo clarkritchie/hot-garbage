@@ -1,16 +1,13 @@
 #!/usr/bin/env zsh
 
-# Use first argument as PR message if provided
-pr_message="$1"
+# Use first argument as base branch
+base_branch="$1"
 
-# Prompt if PR message is not provided
+# Get the last commit message as default
+last_commit_message=$(git log -1 --pretty=format:"%s")
+read "pr_message?Enter PR title/body [default: $last_commit_message]: "
 if [[ -z "$pr_message" ]]; then
-  # Get the last commit message as default
-  last_commit_message=$(git log -1 --pretty=format:"%s")
-  read "pr_message?Enter PR title/body [default: $last_commit_message]: "
-  if [[ -z "$pr_message" ]]; then
-    pr_message="$last_commit_message"
-  fi
+  pr_message="$last_commit_message"
 fi
 
 # Prompt for draft or regular PR, default is no
@@ -61,41 +58,43 @@ case "$reviewer_choice" in
     ;;
 esac
 
-# Prompt for base branch
-echo "Select base branch:"
-echo "1. main"
-echo "2. dev"
-echo "3. stage"
-echo "4. prod"
-echo "5. master"
-echo "6. other"
-read "branch_choice?Enter choice [1-6], default: 1]: "
-branch_choice="${branch_choice:-1}"
+# Prompt if base branch, if not provided
+if [[ -z "$base_branch" ]]; then
+  echo "Select base branch:"
+  echo "1. main"
+  echo "2. dev"
+  echo "3. stage"
+  echo "4. prod"
+  echo "5. master"
+  echo "6. other"
+  read "branch_choice?Enter choice [1-6], default: 1]: "
+  branch_choice="${branch_choice:-1}"
 
-case $branch_choice in
-  1)
-    base_branch="main"
-    ;;
-  2)
-    base_branch="dev"
-    ;;
-  3)
-    base_branch="stage"
-    ;;
-  4)
-    base_branch="prod"
-    ;;
-  5)
-    base_branch="master"
-    ;;
-  6)
-    read "base_branch?Enter custom base branch name: "
-    ;;
-  *)
-    echo "Invalid choice, defaulting to main"
-    base_branch="main"
-    ;;
-esac
+  case $branch_choice in
+    1)
+      base_branch="main"
+      ;;
+    2)
+      base_branch="dev"
+      ;;
+    3)
+      base_branch="stage"
+      ;;
+    4)
+      base_branch="prod"
+      ;;
+    5)
+      base_branch="master"
+      ;;
+    6)
+      read "base_branch?Enter custom base branch name: "
+      ;;
+    *)
+      echo "Invalid choice, defaulting to main"
+      base_branch="main"
+      ;;
+  esac
+fi
 
 # Commit and create PR
 git commit --no-verify -m "$pr_message"

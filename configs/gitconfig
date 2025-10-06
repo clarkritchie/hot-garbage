@@ -23,7 +23,7 @@ else \
 fi; \
 }; f"
 commitnv = commit --no-verify
-cleanup = commit -m 'Minor cleaup :bulb:'
+cleanup = commit -m 'Minor cleanup :bulb:'
 dead = commit -m 'Removes old and/or dead code :coffin:'
 cp = "!f() { \
 if [ -z \"$1\" ]; then \
@@ -48,6 +48,9 @@ trigger-ci = commit -m 'Trigger CI-CD' --allow-empty
 typo = commit -m 'Fixes a typo :see_no_evil:'
 wip = commit -m 'This is work in progress :safety_vest:'
 
+# list remote branches that match my naming pattern
+remote-branches = "!git branch -r | grep clark | sed 's|origin/|- |' | while read line; do branch=$(echo $line | sed 's|- ||'); echo \"$line (delete with: git push origin :$branch)\"; done"
+wcpgw = commit -m 'What could possibly go wrong... :alien:'
 
 [pull]
   rebase = true

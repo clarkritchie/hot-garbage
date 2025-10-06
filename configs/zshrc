@@ -63,36 +63,7 @@ new-zshrc() {
   cp "$src" "${HOME}/$backup1"
 }
 
-
-# new-configs() {
-#   typeset -A config_files
-#   # Assign without quotes to avoid scalar interpretation
-#   config_files=(
-#     $HOME/Projects/clarkritchie/hot-garbage/configs/gitconfig $HOME/.gitconfig
-#     $HOME/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace $HOME/Projects/Projects_main.code-workspace
-#   )
-
-
-#   echo "DEBUG: src='$src'"
-#   echo "DEBUG: keys=${(k)config_files}"
-
-#   for key value in ${(kv)config_files}; do
-#     echo "PAIR: '$key' ➡️ '$value'"
-#   done
-
-
-#   # for src in ${(k)config_files}; do
-#   #   local dest="${config_files[$src]}"
-#   #   echo "$src ➡️ $dest"
-#   #   if [[ -f "$src" ]]; then
-#   #     cp "$src" "$dest"
-#   #     echo "✅ Copied $(basename "$src") to $dest"
-#   #   else
-#   #     echo "⚠️  Warning: $src not found"
-#   #   fi
-#   # done
-# }
-
+# New Configs script and alias
 temp_file=$(mktemp)
 cat <<EOF > "$temp_file"
 #!/usr/bin/env python3
@@ -149,6 +120,13 @@ kgo() {
 }
 alias kevents='kubectl get events --sort-by=".metadata.creationTimestamp"'
 
+# k logs pod/dexcom-datadog-operator-d96ddf49d-ccrnh | jq 'select(.level == "ERROR" and .logger != "controllers.DatadogGenericResource")'
+# kerror() {
+#   k logs "$1" | jq 'select(.level == "ERROR")'
+# }
+
+
+
 # --- OS-Specific Aliases ---
 
 # if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -158,21 +136,22 @@ alias kevents='kubectl get events --sort-by=".metadata.creationTimestamp"'
 # fi
 
 argo-port-forward() {
+  get-argo-secret
+
   # Check if port-forward to localhost:8082 is already running
-  RUNNING=$(pgrep -f "kubectl port-forward svc/argocd-platform-server 8082:80 -n argocd")
-  echo "Running is: ${RUNNING}"
-  if [[ -n "$RUNNING" ]]; then
-    echo "Port-forward to localhost:8082 is already running. Exiting."
+  RUNNING_PID=$(pgrep -f "kubectl port-forward svc/argocd-platform-server 8082:80 -n argocd")
+  if [[ -n "$RUNNING_PID" ]]; then
+    echo "Port-forward to localhost:8082 is already runnin with PID ${RUNNING_PID}. Exiting."
     return 1
   fi
 
   # Run port-forward and open browser based on OS
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) &
-    sleep 2 && open http://localhost:8082
+    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c)
+    # sleep 2 && open http://localhost:8082
   else
-    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c) &
-    sleep 2 && xdg-open http://localhost:8082
+    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c)
+    # sleep 2 && xdg-open http://localhost:8082
   fi
 }
 
@@ -185,6 +164,36 @@ for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-more-z
   [[ -f $file ]] && source $file
 done
 
+#!/usr/bin/env python3
+
+import os
+
+# Path to the Chart.yaml file
+file_path = '/workspace/dexcom-inc/sre/charts/databridge-test/Chart.yaml'
+
+# Read the file
+with open(file_path, 'r') as f:
+    lines = f.readlines()
+
+# Line 9 is index 8 (0-based)
+line_9 = lines[8]
+
+# Define the remote and local repository strings
+remote_repo = 'https://dexcom.jfrog.io/artifactory/api/helm/dexcom-helm-dev-virtual'
+local_repo = 'file://./charts'  # Adjust this to your desired local directory
+
+# Toggle the repository
+if remote_repo in line_9:
+    lines[8] = line_9.replace(remote_repo, local_repo)
+    print("Toggled to local directory: file://./charts")
+else:
+    lines[8] = line_9.replace(local_repo, remote_repo)
+    print("Toggled back to remote repository")
+
+# Write back to the file
+with open(file_path, 'w') as f:
+    f.writelines(lines)
+    
 # --- rbenv ---
 eval "$(rbenv init -)"
 

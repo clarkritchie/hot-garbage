@@ -31,6 +31,7 @@ path=(
   /opt/homebrew/opt/libpq/bin
   $HOME/.local/bin
   $path
+  $HOME/Projects/clarkritchie/hot-garbage/bin
 )
 export PATH
 
@@ -52,6 +53,10 @@ alias no-alt-kubeconfig='unset KUBECONFIG'
 alias rm-bak-files="find . -name '*.bak' -exec rm -f {} \;"
 alias run-porcelain="git status --porcelain | grep '^??' | cut -c4- | xargs rm -rf"
 
+# comment or uncomment the lines that makes Pulumi re-compile the Go binary
+alias compile-on="sed -i '' '4,5 s/^/#/' Pulumi.yaml"
+alias compile-off="sed -i '' '4,5 s/^#//' Pulumi.yaml"
+
 # --- Functions ---
 new-zshrc() {
   local src=~/Projects/clarkritchie/hot-garbage/configs/zshrc
@@ -62,8 +67,6 @@ new-zshrc() {
   cp "$src" "$dest" && source "$dest" 2>/dev/null
   cp "$src" "${HOME}/$backup1"
 }
-
-alias new-configs="python3 new-configs.py"
 
 # Function to decode and print all keys/values from a Kubernetes secret
 kdec(){
@@ -140,65 +143,30 @@ for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-more-z
   [[ -f $file ]] && source $file
 done
 
-#!/usr/bin/env python3
-
-import os
-
-# Path to the Chart.yaml file
-file_path = '/workspace/dexcom-inc/sre/charts/databridge-test/Chart.yaml'
-
-# Read the file
-with open(file_path, 'r') as f:
-    lines = f.readlines()
-
-# Line 9 is index 8 (0-based)
-line_9 = lines[8]
-
-# Define the remote and local repository strings
-remote_repo = 'https://dexcom.jfrog.io/artifactory/api/helm/dexcom-helm-dev-virtual'
-local_repo = 'file://./charts'  # Adjust this to your desired local directory
-
-# Toggle the repository
-if remote_repo in line_9:
-    lines[8] = line_9.replace(remote_repo, local_repo)
-    print("Toggled to local directory: file://./charts")
-else:
-    lines[8] = line_9.replace(local_repo, remote_repo)
-    print("Toggled back to remote repository")
-
-# Write back to the file
-with open(file_path, 'w') as f:
-    f.writelines(lines)
-
 # --- rbenv ---
 eval "$(rbenv init -)"
 
 # --- Prompt Customization ---
 PROMPT='$(kube_ps1)$(kubeconfig-status) '$PROMPT
 
-# iTerm2 profile switcher
-typeset -a ITERM_PROFILES
-ITERM_PROFILES=(
-  "Default"
-  # "idleToes"
-  "Fairyfloss"
-  "ToyChest"
-  "GruvboxDark"
-  "Purple Rain"
-  "MaterialDark"
-  "FrontEndDelight"
-  "Jackie Brown"
-)
+ip() {
+  typeset -a ITERM_PROFILES=(
+    "Default"
+    # "idleToes"
+    "Fairyfloss"
+    "ToyChest"
+    "GruvboxDark"
+    "Purple Rain"
+    "MaterialDark"
+    "FrontEndDelight"
+    "Jackie Brown"
+  )
 
-
-# Pick a random profile
-setopt KSH_ARRAYS
-index=$((RANDOM % ${#ITERM_PROFILES[@]}))
-random_profile=${ITERM_PROFILES[$index]}
-# Show the profile name scrolling across the terminal
-# echo "Using iTerm2 Profile: $random_profile"
-# Apply the profile
-echo -e "\033]50;SetProfile=$random_profile\a"
-unsetopt KSH_ARRAYS
-
+  setopt KSH_ARRAYS 2>/dev/null
+  local index=$((RANDOM % ${#ITERM_PROFILES[@]}))
+  local random_profile=${ITERM_PROFILES[$index]}
+  echo -e "\033]50;SetProfile=$random_profile\a"
+  unsetopt KSH_ARRAYS 2>/dev/null
+}
+ip
 # --- End of zshrc ---

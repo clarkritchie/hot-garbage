@@ -27,10 +27,10 @@ current_date=$(date +%s)
 
 # List all remote branches and filter by pattern
 if [[ "${PATTERN}" == "*" || "${PATTERN}" == ".*" ]]; then
-  echo "Evaluating ALL remote branches..."
-  branches=$(git branch -r --format='%(refname:short)' | grep -v "origin/HEAD" | sed 's/origin\///')
+  echo "Evaluating ALL remote branches from origin..."
+  branches=$(git branch -r --format='%(refname:short)' | grep "^origin/" | grep -v "origin/HEAD" | sed 's/origin\///')
 else
-  branches=$(git branch -r --format='%(refname:short)' | grep -E "^origin/${PATTERN}" | sed 's/origin\///')
+  branches=$(git branch -r --format='%(refname:short)' | grep "^origin/" | grep -E "^origin/${PATTERN}" | sed 's/origin\///')
 fi
 
 if [[ -z "$branches" ]]; then
@@ -83,8 +83,9 @@ for branch in $branches; do
 
   # Check if the branch is older than X days
   if [ $branch_age -gt ${BRANCH_AGE} ]; then
-  # \033[0;32mIAM Policy\033[0m
-    echo "Remote branch 'origin/$branch' is $branch_age days old."
+    echo ""
+    # echo "Remote branch 'origin/$branch' is $branch_age days old."
+    printf "Remote branch 'origin/$branch' is \033[0;32m%s days old\033[0m.\n" "$branch_age"
     read -p "Do you want to delete this remote branch? (y/n) " answer
     if [ "$answer" = "y" ]; then
       echo "Deleting remote branch 'origin/$branch'..."

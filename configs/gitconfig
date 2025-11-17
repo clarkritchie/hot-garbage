@@ -22,6 +22,7 @@ else \
   git checkout -b clark/${mo}-${day}-$1; \
 fi; \
 }; f"
+copilot = "commit -m '🤖 Addresses feedback from our AI Overlords'"
 commitnv = commit --no-verify
 cleanup = commit -m 'Minor cleanup :bulb:'
 dead = commit -m 'Removes old and/or dead code :coffin:'
@@ -40,6 +41,7 @@ linting = commit -m 'Linting fix-ups :lipstick:'
 minor = commit -m 'Minor fixes -- i.e. code consistency, linting, small bugs, tests and/or documentation'
 oops = reset --hard HEAD
 p = push
+pp = "!git pull && !git push"
 recent-tags = "!git fetch --tags && git for-each-ref --sort=-creatordate --format='%(creatordate:format:%Y-%m-%d %H:%M) %(refname:short)' refs/tags | head -n 10"
 sha = "rev-parse --short HEAD"
 sha-full = "rev-parse HEAD"

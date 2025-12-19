@@ -6,7 +6,7 @@ config_files = [
     (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md"), os.path.expanduser("~/Projects/dexcom-inc/sre/.github")),
     (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md"), os.path.expanduser("~/Projects/dexcom-inc/database/.github")),
     (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/gitconfig"), os.path.expanduser("~/.gitconfig")),
-    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace"), os.path.expanduser("~/Projects/Projects_main.code-workspace")),
+    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace"), os.path.expanduser("~/Projects/Projects.code-workspace")),
     (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_vnv.code-workspace"), os.path.expanduser("~/Projects/Projects_vnv.code-workspace")),
 ]
 

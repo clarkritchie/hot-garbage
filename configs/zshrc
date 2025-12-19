@@ -84,6 +84,14 @@ kubeconfig-status() {
   fi
 }
 
+# show the current Pulumi stack
+current-pulumi-stack() {
+  local stack=$(pulumi stack --show-name 2>/dev/null)
+  if [[ -n "$stack" ]]; then
+    echo " [$stack]"
+  fi
+}
+
 # --- K8s Shortcuts ---
 alias k=kubectl
 alias klc="k config get-contexts"
@@ -147,7 +155,7 @@ done
 eval "$(rbenv init -)"
 
 # --- Prompt Customization ---
-PROMPT='$(kube_ps1)$(kubeconfig-status) '$PROMPT
+PROMPT='$(kube_ps1)$(kubeconfig-status)$(current-pulumi-stack) '$PROMPT
 
 ip() {
   typeset -a ITERM_PROFILES=(

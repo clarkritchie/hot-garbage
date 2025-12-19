@@ -41,6 +41,23 @@ The interactive mode now allows you to:
 - Enter custom names for any artifact type
 - Pass additional arguments like `--limit` and `--tag-length`
 
+## Docker and Helm Options Management
+
+The Docker and Helm options lists are automatically generated from the repository structure:
+
+- **Docker options**: Scans `sre/apps` and `database/apps` for directories containing Dockerfiles
+- **Helm options**: Scans `sre/charts` and `database/charts` for directories containing Chart.yaml
+
+To regenerate both options lists:
+
+```bash
+./generate-options.zsh
+# or
+make options
+```
+
+This will create/update the `.docker-options` and `.helm-options` files with all available applications. These files are auto-generated and should not be edited manually.
+
 ## Makefile Targets
 
 - `make test` - Run tests

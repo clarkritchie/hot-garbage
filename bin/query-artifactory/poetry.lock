@@ -188,7 +188,6 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {dev = "sys_platform == \"win32\""}
 
 [[package]]
 name = "coverage"
@@ -468,19 +467,18 @@ files = [
 
 [[package]]
 name = "sre-libs"
-version = "0.2.1"
-description = "SRE Python Libraries for Dexcom internal tooling"
+version = "0.3.1"
+description = "SRE Libraries for Dexcom Infrastructure"
 optional = false
 python-versions = ">=3.9,<4.0"
 groups = ["main"]
 files = [
-    {file = "sre_libs-0.2.1-py3-none-any.whl", hash = "sha256:7d9544f848e196ebc8a3a12112c9208bed7ee6127ace66bdba8de639fe2363b5"},
-    {file = "sre_libs-0.2.1.tar.gz", hash = "sha256:f6ca1a588ca47291692f5f32cfb4044d59d42e13075384e0f44a98b120946674"},
+    {file = "sre_libs-0.3.1-py3-none-any.whl", hash = "sha256:b7b70d286f815dc330c9f0877fe1947af08bbd213eb910e7e38a469686ac5cab"},
+    {file = "sre_libs-0.3.1.tar.gz", hash = "sha256:b452ecf985eaffc93b75baf78b00ff19a02d3e9e54e853e1a9cb1306b3f16698"},
 ]
 
 [package.dependencies]
 cassandra-driver = "3.29.2"
-colorama = ">=0.4.6,<0.5.0"
 datadog = ">=0.50.0"
 datadog-api-client = ">=2.28.0"
 
@@ -522,4 +520,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "468896316aa494e5e0b7cb9b6cec99125f4ca371c9ea7d4ae5d31a8e6ac04d64"
+content-hash = "50b744efd92873cb689725f8b23811cf6537d550d17cff3b04d0aeeb8dc61202"

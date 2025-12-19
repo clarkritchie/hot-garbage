@@ -32,12 +32,18 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+# Initialize logger
+from lib.dexcom_logging import DexcomLogging
+
+logger = DexcomLogging(name="query-artifactory", log_to_file=False).get_logger()
+
 try:
     from colorama import Fore, Style, init as colorama_init
 
     colorama_init(autoreset=True)
     HAS_COLORAMA = True
-except ImportError:
+except ImportError as e:
+    logger.error(f"Colorama import error: {e}")
     HAS_COLORAMA = False
 
     # Fallback if colorama is not available
@@ -50,12 +56,6 @@ except ImportError:
     class Style:
         BRIGHT = ""
         RESET_ALL = ""
-
-
-from lib.dexcom_logging import DexcomLogging
-
-# Initialize logger
-logger = DexcomLogging(name="query-artifactory", log_to_file=False).get_logger()
 
 
 class JFrogClient:
@@ -124,11 +124,12 @@ class JFrogClient:
 class ArtifactoryQueryTool:
     """Main tool for querying Artifactory."""
 
-    def __init__(self):
+    def __init__(self, environment: str = "dev"):
         self.client = JFrogClient()
-        self.docker_repo = "dexcom-docker-dev-virtual"
-        self.helm_repo = "dexcom-helm-dev-virtual"
-        self.pypi_repo = "dexcom-pypi-dev-local"
+        self.environment = environment
+        self.docker_repo = f"dexcom-docker-{environment}-virtual"
+        self.helm_repo = f"dexcom-helm-{environment}-virtual"
+        self.pypi_repo = f"dexcom-pypi-{environment}-local"
 
     def query_docker(
         self, item_name: str, limit: int = 5, tag_length: int = 7
@@ -311,6 +312,12 @@ Examples:
         help="Type of artifact to search for (default: docker)",
     )
     parser.add_argument(
+        "environment",
+        nargs="?",
+        default="dev",
+        help="Artifactory environment (default: dev)",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=5,
@@ -329,7 +336,8 @@ Examples:
     )
 
     args = parser.parse_args()
-    tool = ArtifactoryQueryTool()
+
+    tool = ArtifactoryQueryTool(environment=args.environment)
 
     try:
         if args.artifact_type == "docker":
@@ -344,9 +352,13 @@ Examples:
             sys.exit(1)
 
         if results:
-            # Display all results normally
-            for result in results:
-                logger.info(result)
+            # Display all results with colors preserved
+            for i, result in enumerate(results):
+                if HAS_COLORAMA and i == 0 and not args.no_highlight:
+                    # Highlight the most recent (first) result
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}")
+                else:
+                    print(result)
 
             # Show most recent summary at the end (if highlighting is enabled)
             if not args.no_highlight:
@@ -356,13 +368,18 @@ Examples:
                     highlighted_result = f"{Fore.GREEN}{Style.BRIGHT}🔥 MOST RECENT: {most_recent}{Style.RESET_ALL}"
                     print(highlighted_result)  # Use print to preserve color formatting
                 else:
-                    logger.info(f"🔥 MOST RECENT: {most_recent}")
+                    print(f"🔥 MOST RECENT: {most_recent}")
 
             # Print Artifactory link
             print()
-            logger.info(
-                f"Go to Artifactory: https://dexcom.jfrog.io/ui/packages/{args.artifact_type}:%2F%2F{args.item_name}"
-            )
+            if HAS_COLORAMA:
+                print(
+                    f"{Fore.YELLOW}Go to Artifactory: https://dexcom.jfrog.io/ui/packages/{args.artifact_type}:%2F%2F{args.item_name}{Style.RESET_ALL}"
+                )
+            else:
+                print(
+                    f"Go to Artifactory: https://dexcom.jfrog.io/ui/packages/{args.artifact_type}:%2F%2F{args.item_name}"
+                )
         else:
             logger.warning(f"No results found for {args.item_name}")
 

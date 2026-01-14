@@ -58,6 +58,48 @@ case "$reviewer_choice" in
     ;;
 esac
 
+# Prompt for labels
+echo "Select labels (space-separated numbers, e.g. '1 3 5'):"
+echo "1) bug"
+echo "2) upgrade"
+echo "3) do-not-merge"
+echo "4) documentation"
+echo "5) enhancement"
+echo "6) wip"
+echo "7) None"
+read "label_choices?Choose labels [default: 6]: "
+label_choices="${label_choices:-6}"
+
+labels=""
+for choice in ${=label_choices}; do
+  case "$choice" in
+    1)
+      labels="${labels:+$labels,}bug"
+      ;;
+    2)
+      labels="${labels:+$labels,}upgrade"
+      ;;
+    3)
+      labels="${labels:+$labels,}do-not-merge"
+      ;;
+    4)
+      labels="${labels:+$labels,}documentation"
+      ;;
+    5)
+      labels="${labels:+$labels,}enhancement"
+      ;;
+    6)
+      labels="${labels:+$labels,}wip"
+      ;;
+    6)
+      # None - do nothing
+      ;;
+    *)
+      echo "Invalid choice: $choice (ignoring)"
+      ;;
+  esac
+done
+
 # Prompt if base branch, if not provided
 if [[ -z "$base_branch" ]]; then
   echo "Select base branch:"
@@ -98,11 +140,20 @@ fi
 
 # Commit and create PR
 git commit --no-verify -m "$pr_message"
+
+# Build gh pr create command
+pr_cmd=(gh pr create --title="$pr_message" --body="$pr_message" --base="$base_branch")
 if [[ -n "$reviewers" ]]; then
-  gh pr create --title="$pr_message" --body="$pr_message" --base="$base_branch" --reviewer="$reviewers" $draft_flag
-else
-  gh pr create --title="$pr_message" --body="$pr_message" --base="$base_branch" $draft_flag
+  pr_cmd+=(--reviewer="$reviewers")
 fi
+if [[ -n "$labels" ]]; then
+  pr_cmd+=(--label="$labels")
+fi
+if [[ -n "$draft_flag" ]]; then
+  pr_cmd+=($draft_flag)
+fi
+
+"${pr_cmd[@]}"
 
 # open in browser
 gh pr view --web

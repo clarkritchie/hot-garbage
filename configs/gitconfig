@@ -34,8 +34,9 @@ else \
 fi; \
 }; f"
 derp = commit -m 'Whoops :see_no_evil:'
-docs = commit -m 'Adds documentation :pencil2:'
+docs = commit -m 'Adds to documentation, code comments, etc. :pencil2:'
 experiment = commit -m 'Experimenting... :test_tube:'
+fa = fetch -a
 hmmm = commit -m 'Debugging things :monocle_face:'
 linting = commit -m 'Linting fix-ups :lipstick:'
 minor = commit -m 'Minor fixes -- i.e. code consistency, linting, small bugs, tests and/or documentation'
@@ -45,6 +46,13 @@ pp = "!git pull && !git push"
 recent-tags = "!git fetch --tags && git for-each-ref --sort=-creatordate --format='%(creatordate:format:%Y-%m-%d %H:%M) %(refname:short)' refs/tags | head -n 10"
 sha = "rev-parse --short HEAD"
 sha-full = "rev-parse HEAD"
+sp = "!f() { \
+        git stash -u && \
+        git pull --rebase && \
+        git stash pop || true; \
+        git add -p; \
+    }; f"
+standards = commit -m ':construction_worker: Bring this project up to team standards'
 tests = commit -m 'Tests tests tests :test_tube:'
 trigger-ci = commit -m 'Trigger CI-CD' --allow-empty
 typo = commit -m 'Fixes a typo :see_no_evil:'

@@ -1,14 +1,22 @@
-# --- Oh My Zsh & Theme Setup ---
+# ============================================================================
+# OH MY ZSH CONFIGURATION
+# ============================================================================
+
 export ZSH="$HOME/.oh-my-zsh"
-# Themes: https://github.com/ohmyzsh/ohmyzsh/wiki/themes
-ZSH_THEME="amuse"
+export ZSH_THEME="amuse"
 export GCP_ZSH_THEME="dpoggi"
 
-# Speed startup (avoid OMZ update checks / compaudit work)
 zstyle ':omz:update' mode disabled
 export ZSH_DISABLE_COMPFIX=true
 
-# On-demand update check (since auto-update checks are disabled above)
+plugins=(git virtualenv helm gcloud kubectl kubectx kube-ps1)
+if [[ -n "${ITERM_SESSION_ID:-}" ]]; then
+  plugins+=(iterm2)
+fi
+
+source $ZSH/oh-my-zsh.sh
+
+unalias omz-update-check 2>/dev/null
 omz-update-check() {
   if command -v omz >/dev/null 2>&1; then
     omz update
@@ -21,13 +29,11 @@ omz-update-check() {
 }
 alias omz-update='omz-update-check'
 
-plugins=(git virtualenv helm gcloud kubectl kubectx kube-ps1)
-if [[ -n "${ITERM_SESSION_ID:-}" ]]; then
-  plugins+=(iterm2)
-fi
-source $ZSH/oh-my-zsh.sh
+# ============================================================================
+# ENVIRONMENT SETUP
+# ============================================================================
 
-# --- PATH Setup (using array for clarity) ---
+# --- PATH ---
 typeset -U path
 path=(
   /opt/homebrew/bin
@@ -44,22 +50,18 @@ path=(
   /Applications/CyberArk\ EPM.app/Contents/MacOS
   /System/Cryptexes/App/usr/bin
   /Applications/iTerm.app/Contents/Resources/utilities
-  # $HOME/.rd/bin
   /opt/homebrew/share/google-cloud-sdk/bin
-  $HOME/Projects/dexcom-inc/sre/etc
-  $HOME/Projects/clarkritchie/hot-garbage/bin
-  # $(go env GOPATH)/bin
   /opt/homebrew/Cellar/mysql-client/8.3.0/bin
   /opt/homebrew/opt/libpq/bin
+  $HOME/Projects/dexcom-inc/sre/etc
+  $HOME/Projects/clarkritchie/hot-garbage/bin
   $HOME/.local/bin
   $path
 )
-
-# Drop any PATH entries that don't exist on this machine (helps when sharing config across OSes)
 path=(${^path}(N-/))
 export PATH
 
-# --- History (make recall/search great) ---
+# --- History ---
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=200000
 export SAVEHIST=200000
@@ -73,106 +75,47 @@ setopt hist_verify
 setopt inc_append_history
 setopt share_history
 
-# --- Aliases ---
-alias alt-kubeconfig='export KUBECONFIG=~/.kube/config-alt'
-alias chart-bump="$HOME/Projects/clarkritchie/hot-garbage/bin/bump-helm-chart-version.zsh"
-alias create-pr='create-pr.zsh'
-alias current-tag='git describe --tags'
-fix-whitespace() {
-  local file_path="${1:-}"
-  if [[ -z "$file_path" ]]; then
-    echo "Usage: fix-whitespace <file>"
-    return 2
-  fi
+# --- Other Environment Variables ---
+export TABSTOP=2
+export CLOUDSDK_PYTHON_SITEPACKAGES=1
 
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' 's/[[:space:]]*$//' "$file_path"
-  else
-    sed -i 's/[[:space:]]*$//' "$file_path"
-  fi
-}
-alias get-argo-secret='k get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data}" | jq -r '\''to_entries[] | "\(.key): \(.value | @base64d)"'\'
-alias git-sha='git rev-parse --short HEAD'
-alias git-tags='git fetch origin --tags && git tag --list --sort=creatordate | tail -1'
-alias go-database='cd ~/Projects/dexcom-inc/database'
-alias go-sre='cd ~/Projects/dexcom-inc/sre'
-alias go-sre-libs='cd ~/Projects/dexcom-inc/sre-libs'
-alias h='history'
-alias ls="ls -la --color"
-alias no-alt-kubeconfig='unset KUBECONFIG'
-alias rm-bak-files="find . -name '*.bak' -exec rm -f {} \;"
+# --- rbenv ---
+eval "$(rbenv init -)"
 
-# Safer replacement for the old "run-porcelain" (which could delete the wrong things and breaks on spaces).
-# Dry-run first, then require an explicit confirmation before deletion.
-run-porcelain() {
-  echo "Untracked files (git status):"
-  git status --porcelain
+# ============================================================================
+# KUBERNETES
+# ============================================================================
 
-  echo "\nDry run (what would be deleted):"
-  git clean -fdn
-
-  echo -n "\nType 'yes' to delete these untracked files: "
-  local confirm
-  read -r confirm
-  if [[ "$confirm" != "yes" ]]; then
-    echo "Aborted."
-    return 1
-  fi
-
-  git clean -fd
-}
-
-# Aliases to comment or uncomment the lines that makes Pulumi re-compile the Go binary
-alias compile-on="sed -i '' '4,5 s/^/#/' Pulumi.yaml"
-alias compile-off="sed -i '' '4,5 s/^#//' Pulumi.yaml"
-
-# --- Personal Functions ---
-new-zshrc() {
-  local src=~/Projects/clarkritchie/hot-garbage/configs/zshrc
-  local dest=~/.zshrc
-  local backup1='Library/Mobile Documents/iCloud~md~obsidian/Documents/Misc/obsidian-backup/Code/zshrc.zsh'
-  echo "Installing new .zshrc"
-  # redirect to silence command not found with path
-  cp "$src" "$dest" && source "$dest" 2>/dev/null
-  cp "$src" "${HOME}/$backup1"
-}
-
-new-configs() {
-  python3 ~/Projects/clarkritchie/hot-garbage/bin/new-configs.py
-}
-
-# Kube PS1 prompt
-# https://github.com/jonmosco/kube-ps1
-
-# Declare a function to show the current Pulumi stack
-current-pulumi-stack() {
-  local stack=$(pulumi stack --show-name 2>/dev/null)
-  if [[ -n "$stack" ]]; then
-    echo " [$stack]"
-  fi
-}
-
-# --- Kubernetes Shortcuts ---
 alias k=kubectl
-alias klc="k config get-contexts"
 alias kcc="k config current-context"
-alias kuc="k config use-context"
-alias kns="k get namespaces"
 alias kdp='f() { k describe pod $1 };f'
-alias kun='f() { k config set-context --current --namespace=$1 };f'
 alias kevents='kubectl get events --sort-by=".metadata.creationTimestamp"'
+alias klc="k config get-contexts"
+alias kns="k get namespaces"
+alias kuc="k config use-context"
+alias kun='f() { k config set-context --current --namespace=$1 };f'
 
+alias alt-kubeconfig='export KUBECONFIG=~/.kube/config-alt'
+alias no-alt-kubeconfig='unset KUBECONFIG'
+
+unalias kdec 2>/dev/null
+kdec() {
+  kubectl get secret $1 -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+}
+
+unalias kgo 2>/dev/null
 kgo() {
   pod=$(kubectl get pods --no-headers | awk "NR==$1" | awk '{print $1}')
   echo "Getting a shell in $pod"
   kubectl exec --stdin --tty "$pod" -- /bin/bash
 }
 
+unalias krmreplicas 2>/dev/null
 krmreplicas() {
   kubectl get rs | awk '$2==0 {print $1}' | xargs kubectl delete rs
 }
 
-# Function to show KUBECONFIG status in prompt if $KUBECONFIG is currently pointed elsewhere
+unalias kubeconfig-status 2>/dev/null
 kubeconfig-status() {
   local default_config="$HOME/.kube/config"
   if [[ -n "$KUBECONFIG" && "$KUBECONFIG" != "$default_config" ]]; then
@@ -180,50 +123,179 @@ kubeconfig-status() {
   fi
 }
 
-# Function to decode and print all keys/values from a Kubernetes secret
-kdec(){
-   kubectl get secret $1 -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
-}
+# ============================================================================
+# GIT & VERSION CONTROL
+# ============================================================================
 
-# k logs pod/dexcom-datadog-operator-d96ddf49d-ccrnh | jq 'select(.level == "ERROR" and .logger != "controllers.DatadogGenericResource")'
-# kerror() {
-#   k logs "$1" | jq 'select(.level == "ERROR")'
-# }
+alias chart-bump="$HOME/Projects/clarkritchie/hot-garbage/bin/bump-helm-chart-version.zsh"
+alias create-pr='create-pr.zsh'
+alias current-tag='git describe --tags'
+alias git-sha='git rev-parse --short HEAD'
+alias git-tags='git fetch origin --tags && git tag --list --sort=creatordate | tail -1'
 
-argo-port-forward() {
-  get-argo-secret
 
-  # Check if port-forward to localhost:8082 is already running
-  RUNNING_PID=$(pgrep -f "kubectl port-forward svc/argocd-platform-server 8082:80 -n argocd")
-  if [[ -n "$RUNNING_PID" ]]; then
-    echo "Port-forward to localhost:8082 is already runnin with PID ${RUNNING_PID}. Exiting."
+unalias reopen-pr 2>/dev/null
+unalias re-open-pr 2>/dev/null
+
+# reopen-pr 1234 y y - approve and auto-merge
+# reopen-pr 1234 n y - don't approve, but auto-merge
+# reopen-pr 1234 - prompt for both
+reopen-pr() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: reopen-pr <pr-number> [approve:y/n] [auto-merge:y/n]"
     return 1
   fi
+  sleep=3s
+  local pr_number="$1"
+  local approve_pr="${2:-}"
+  local enable_auto="${3:-}"
 
-  # Run port-forward and open browser based on OS
+  # Prompt if not provided as arguments
+  if [[ -z "$approve_pr" ]]; then
+    echo -n "Approve this PR? [y/N]: "
+    read -r approve_pr
+  fi
+
+  if [[ -z "$enable_auto" ]]; then
+    echo -n "Enable auto-merge (squash)? [y/N]: "
+    read -r enable_auto
+  fi
+
+  echo "Closing PR #${pr_number}..."
+  gh pr close "$pr_number" || return 1
+  echo "Waiting $sleep seconds..."
+  sleep "$sleep"
+
+  echo "Reopening PR #${pr_number}..."
+  gh pr reopen "$pr_number" || return 1
+  echo "✅ PR #${pr_number} reopened - workflows should trigger now"
+
+  if [[ "$approve_pr" =~ ^[Yy]$ ]]; then
+    echo "Approving PR..."
+    gh pr review "$pr_number" --approve || return 1
+    echo "✅ PR approved"
+    sleep "$sleep"
+  fi
+
+  if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
+    echo "Enabling auto-merge..."
+    gh pr merge "$pr_number" --auto --squash || return 1
+    echo "✅ Auto-merge enabled"
+    sleep "$sleep"
+  fi
+}
+alias re-open-pr=reopen-pr
+
+unalias run-porcelain 2>/dev/null
+run-porcelain() {
+  echo "Untracked files (git status):"
+  git status --porcelain
+  echo "\nDry run (what would be deleted):"
+  git clean -fdn
+  echo -n "\nType 'yes' to delete these untracked files: "
+  local confirm
+  read -r confirm
+  if [[ "$confirm" != "yes" ]]; then
+    echo "Aborted."
+    return 1
+  fi
+  git clean -fd
+}
+
+# ============================================================================
+# SHELL/UTILITIES
+# ============================================================================
+
+alias ls='ls -lahp --color=auto'
+# alias c='command'
+alias rm-bak-files="find . -name '*.bak' -exec rm -f {} \;"
+
+alias compile-on="sed -i '' '4,5 s/^/#/' Pulumi.yaml"
+alias compile-off="sed -i '' '4,5 s/^#//' Pulumi.yaml"
+
+unalias fix-whitespace 2>/dev/null
+fix-whitespace() {
+  local file_path="${1:-}"
+  if [[ -z "$file_path" ]]; then
+    echo "Usage: fix-whitespace <file>"
+    return 2
+  fi
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c)
-    # sleep 2 && open http://localhost:8082
+    sed -i '' 's/[[:space:]]*$//' "$file_path"
   else
-    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c)
-    # sleep 2 && xdg-open http://localhost:8082
+    sed -i 's/[[:space:]]*$//' "$file_path"
   fi
 }
 
-# --- Source Additional Configs ---
-for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-more-zsh.zshrc" "$HOME/Projects/etc/cloudsql-aliases.zshrc"; do
-  [[ -f $file ]] && source $file
-done
+# ============================================================================
+# ARGOCD
+# ============================================================================
 
-# --- rbenv ---
-eval "$(rbenv init -)"
+alias get-argo-secret='k get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data}" | jq -r '\''to_entries[] | "\(.key): \(.value | @base64d)"'\'
 
-# --- Prompt Customization ---
+unalias argo-port-forward 2>/dev/null
+argo-port-forward() {
+  get-argo-secret
+  RUNNING_PID=$(pgrep -f "kubectl port-forward svc/argocd-platform-server 8082:80 -n argocd")
+  if [[ -n "$RUNNING_PID" ]]; then
+    echo "Port-forward to localhost:8082 is already running with PID ${RUNNING_PID}. Exiting."
+    return 1
+  fi
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c)
+  else
+    k port-forward svc/argocd-platform-server 8082:80 -n argocd --context=$(kubectx -c)
+  fi
+}
+
+# ============================================================================
+# CONFIG MANAGEMENT
+# ============================================================================
+
+unalias new-zshrc 2>/dev/null
+new-zshrc() {
+  local src=~/Projects/clarkritchie/hot-garbage/configs/zshrc
+  local dest=~/.zshrc
+  local backup1='Library/Mobile Documents/iCloud~md~obsidian/Documents/Misc/obsidian-backup/Code/zshrc.zsh'
+  echo "Installing new .zshrc"
+  cp "$src" "$dest" && source "$dest" 2>/dev/null
+  cp "$src" "${HOME}/$backup1"
+}
+
+unalias new-configs 2>/dev/null
+new-configs() {
+  python3 ~/Projects/clarkritchie/hot-garbage/bin/new-configs.py
+}
+
+# ============================================================================
+# FZF INTEGRATION
+# ============================================================================
+
+unalias h 2>/dev/null
+if [[ -f /opt/homebrew/bin/fzf ]]; then
+  source <(fzf --zsh)
+  alias h='selected=$(history -n 1 | fzf --tac --no-sort) && [[ -n "$selected" ]] && print -z "$selected"'
+else
+  alias h=history
+fi
+
+# ============================================================================
+# PROMPT CUSTOMIZATION
+# ============================================================================
+
+unalias current-pulumi-stack 2>/dev/null
+current-pulumi-stack() {
+  local stack=$(pulumi stack --show-name 2>/dev/null)
+  if [[ -n "$stack" ]]; then
+    echo " [$stack]"
+  fi
+}
+
 PROMPT='$(kube_ps1)$(kubeconfig-status)$(current-pulumi-stack) '$PROMPT
+
+unalias ip 2>/dev/null
 ip() {
   typeset -a ITERM_PROFILES=(
-    # "Default"
-    # "idleToes"
     "Fairyfloss"
     "ToyChest"
     "GruvboxDark"
@@ -231,26 +303,25 @@ ip() {
     "FrontEndDelight"
     "Jackie Brown"
   )
-
   setopt KSH_ARRAYS 2>/dev/null
   local index=$((RANDOM % ${#ITERM_PROFILES[@]}))
   local random_profile=${ITERM_PROFILES[$index]}
   echo -e "\033]50;SetProfile=$random_profile\a"
   unsetopt KSH_ARRAYS 2>/dev/null
 }
+
 if [[ -o interactive && -n "${ITERM_SESSION_ID:-}" ]]; then
   ip
 fi
 
-# --- Miscellaneous ---
-export TABSTOP=2
-export CLOUDSDK_PYTHON_SITEPACKAGES=1
+# ============================================================================
+# SOURCE EXTERNAL CONFIGS
+# ============================================================================
 
-# --- zoxide (smarter "cd") ---
-# Install: https://github.com/ajeetdsouza/zoxide
-# Alternative: fzf (great for fuzzy history/file search, different workflow).
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh)"
-fi
+for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-more-zsh.zshrc" "$HOME/Projects/etc/cloudsql-aliases.zshrc"; do
+  [[ -f $file ]] && source $file
+done
 
-# --- End of zshrc ---
+# ============================================================================
+# END
+# ============================================================================

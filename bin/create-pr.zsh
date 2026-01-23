@@ -61,13 +61,14 @@ esac
 # Prompt for labels
 echo "Select labels (space-separated numbers, e.g. '1 3 5'):"
 echo "1) bug"
-echo "2) upgrade"
+echo "2) cleanup"
 echo "3) do-not-merge"
 echo "4) documentation"
 echo "5) enhancement"
-echo "6) wip"
-echo "7) None"
-read "label_choices?Choose labels [default: 6]: "
+echo "6) upgrade"
+echo "7) wip"
+echo "8) None"
+read "label_choices?Choose labels [default: 7]: "
 label_choices="${label_choices:-6}"
 
 labels=""
@@ -77,7 +78,7 @@ for choice in ${=label_choices}; do
       labels="${labels:+$labels,}bug"
       ;;
     2)
-      labels="${labels:+$labels,}upgrade"
+      labels="${labels:+$labels,}cleanup"
       ;;
     3)
       labels="${labels:+$labels,}do-not-merge"
@@ -89,9 +90,12 @@ for choice in ${=label_choices}; do
       labels="${labels:+$labels,}enhancement"
       ;;
     6)
+      labels="${labels:+$labels,}upgrade"
+      ;;
+    7)
       labels="${labels:+$labels,}wip"
       ;;
-    6)
+    8)
       # None - do nothing
       ;;
     *)

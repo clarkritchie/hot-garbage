@@ -10,7 +10,7 @@
   # co = "!sh -c 'dict=/usr/share/dict/words; words=($(cat \"$dict\" | awk \"{print tolower(\\$0)}\" | sort -R | head -n 2)); name=\"clark/${words[0]}-${words[1]}\"; git checkout -b \"$name\"'"
   # co = "!f() { mo=$(date +"%b" | tr '[:upper:]' '[:lower:]') && day=$(date '+%d') && git checkout -b clark/${mo}-${day}-$1; }; f"
 bra = branch --format="%(refname:short)"
-bugs = commit -m 'A small bugfix or two :bug:'
+bugs = commit -m ':bug: A small bugfix or two'
 check = !git status --porcelain | grep "^??" && echo "Warning: Untracked files found!" || echo "No untracked files."
 clean = status --porcelain | grep '^??' | cut -c4- | xargs rm -rf
 co = "!f() { \
@@ -24,8 +24,8 @@ fi; \
 }; f"
 copilot = "commit -m '🤖 Addresses feedback from our AI Overlords'"
 commitnv = commit --no-verify
-cleanup = commit -m 'Minor cleanup :bulb:'
-dead = commit -m 'Removes old and/or dead code :coffin:'
+cleanup = commit -m ':bulb: Minor cleanup'
+dead = commit -m ':coffin: Removes old and/or dead code'
 cp = "!f() { \
 if [ -z \"$1\" ]; then \
   echo \"🍒 There are no cherries to pick\"; \
@@ -33,13 +33,14 @@ else \
   git cherry-pick $1; \
 fi; \
 }; f"
-derp = commit -m 'Whoops :see_no_evil:'
-docs = commit -m 'Adds to documentation, code comments, etc. :pencil2:'
-experiment = commit -m 'Experimenting... :test_tube:'
+derp = commit -m ':see_no_evil: Whoops'
+docs = commit -m ':pencil2: Adds to documentation, code comments, etc.'
+experiment = commit -m ':test_tube: Experimenting...'
 fa = fetch -a
-hmmm = commit -m 'Debugging things :monocle_face:'
-linting = commit -m 'Linting fix-ups :lipstick:'
-minor = commit -m 'Minor fixes -- i.e. code consistency, linting, small bugs, tests and/or documentation'
+hmmm = commit -m ':monocle_face: Debugging things'
+linting = commit -m ':lipstick: Linting fix-ups'
+minor = commit -m 'Minor fixes -- i.e. code consistency, small bugs, tests, documentation'
+log-1 = !git --no-pager log --oneline | head
 oops = reset --hard HEAD
 p = push
 pp = "!git pull && !git push"
@@ -53,23 +54,24 @@ sp = "!f() { \
         git add -p; \
     }; f"
 standards = commit -m ':construction_worker: Bring this project up to team standards'
-tests = commit -m 'Tests tests tests :test_tube:'
+tests = commit -m ':test_tube: Tests tests tests'
 trigger-ci = commit -m 'Trigger CI-CD' --allow-empty
-typo = commit -m 'Fixes a typo :see_no_evil:'
-wip = commit -m 'This is work in progress :safety_vest:'
+typo = commit -m ':see_no_evil: Fixes a typo'
+wip = commit -m ':safety_vest: This is work in progress'
 
 # list remote branches that match my naming pattern
 remote-branches = "!git branch -r | grep clark | sed 's|origin/|- |' | while read line; do branch=$(echo $line | sed 's|- ||'); echo \"$line (delete with: git push origin :$branch)\"; done"
-wcpgw = commit -m 'What could possibly go wrong... :alien:'
+wcpgw = commit -m ':alien: What could possibly go wrong...'
 
 [pull]
   rebase = true
 [url "git@github.com:"]
   insteadOf = https://github.com/
 [core]
-    pager = delta
+  pager = delta
+  # pager = less -F -X
   editor = vim
-    # pager = less -F -X
+  whitespace = fix
 [interactive]
     diffFilter = delta --color-only
 [delta]

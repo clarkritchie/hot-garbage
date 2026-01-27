@@ -1,0 +1,92 @@
+{
+  "folders": [
+    {
+      "name": "🧰 Site Reliability Engineering",
+      "path": "dexcom-inc/sre"
+    },
+    {
+      "name": "🍔 SRE Libs",
+      "path": "dexcom-inc/sre-libs"
+    },
+    {
+      "name": "💾 Database (Deprecated)",
+      "path": "dexcom-inc/database"
+    },
+    {
+      "name": "____________________________________",
+      "path": "baz"
+    },
+    {
+      "name": "🔱 TriDev",
+      "path": "dexcom-inc/tridev"
+    },
+    {
+      "name": "⚽ Core Services",
+      "path": "dexcom-inc/dxcm-core-services"
+    },
+    {
+      "name": "🟨 Platform Toolbox",
+      "path": "dexcom-inc/platform-toolbox"
+    },
+    {
+      "name": "♻️ Reusable Workflows",
+      "path": "dexcom-inc/dexcom-reusable-workflows"
+    }
+    {
+      "name": "____________________________________",
+      "path": "bar"
+    },
+    {
+      "name": "⛑️ Continuous Validation Tests",
+      "path": "dexcom-inc/tests"
+    },
+    {
+      "name": "🍉 SRE @ dex-integration-1",
+      "path": "dexcom-inc/sre-dex-integration-1"
+    },
+    {
+      "name": "🐶 K8s Datadog",
+      "path": "dexcom-inc/k8s-datadog"
+    },
+    {
+      "name": "____________________________________",
+      "path": "foo"
+    },
+    {
+      "name": "🐤 Temporary",
+      "path": "tmp"
+    },
+    {
+      "name": "🌮 etc",
+      "path": "etc"
+    },
+    {
+      "name": "🔥 Hot Garbage",
+      "path": "clarkritchie/hot-garbage"
+    },
+  ],
+  "settings": {
+    "window.zoomLevel": 1,
+    "files.autoSave": "afterDelay",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.rulers": [
+      80,
+      100,
+      120
+    ],
+    "github.copilot.advanced": {
+      "network": {
+        "proxy": {
+          "strictSSL": false
+        }
+      }
+    },
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "window.autoDetectColorScheme": true,
+    "python.analysis.diagnosticMode": "openFilesOnly",
+    "python.languageServer": "Jedi",
+    "geminicodeassist.chat.automaticScrolling": true
+  }
+}

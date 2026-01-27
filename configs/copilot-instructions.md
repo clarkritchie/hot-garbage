@@ -70,6 +70,7 @@
 - Placeholder variables like `foo` or `bar` try to use meaningful names.
 - Adding unnecessary dependencies.
 - Over-engineered solutions for simple problems.
+- Avoid creating overly long files, modularize files as necessary with a target of around 500 lines of code in total.
 
 ## Other
 

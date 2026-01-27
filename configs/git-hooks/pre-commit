@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Pre-commit hook to prevent accidental commits to main/master branches
+#
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+    echo "❌ Direct commits to $branch are not allowed!"
+    echo "💡 Create a feature branch instead:"
+    echo "   git co <branch-name>"
+    exit 1
+fi
+
+exit 0

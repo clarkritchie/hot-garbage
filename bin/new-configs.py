@@ -2,17 +2,36 @@
 import os
 import shutil
 
-config_files = [
-    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md"), os.path.expanduser("~/Projects/dexcom-inc/sre/.github")),
-    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md"), os.path.expanduser("~/Projects/dexcom-inc/database/.github")),
-    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/gitconfig"), os.path.expanduser("~/.gitconfig")),
-    (os.path.expanduser("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace"), os.path.expanduser("~/Projects/Projects.code-workspace")),
+def copy_path(src, dest, is_dir=False):
+    """Copy a file or directory from src to dest."""
+    if is_dir:
+        if not os.path.isdir(src):
+            print(f"⚠️  Warning: {src} not found")
+            return
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(src, dest)
+        # Make hooks executable
+        for item in os.listdir(dest):
+            item_path = os.path.join(dest, item)
+            if os.path.isfile(item_path) and not item.endswith('.sh'):
+                os.chmod(item_path, 0o755)
+    else:
+        if not os.path.isfile(src):
+            print(f"⚠️  Warning: {src} not found")
+            return
+        shutil.copy2(src, dest)
+
+    print(f"✅ Copied {os.path.basename(src)} to {dest}")
+
+paths = [
+    ("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md", "~/Projects/dexcom-inc/sre/.github", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/gitconfig", "~/.gitconfig", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace", "~/Projects/Projects.code-workspace", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/clark-more-zsh.zshrc", "~/Projects/etc", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/git-hooks", "~/.config/git/hooks", True),
 ]
 
-for src, dest in config_files:
-    # print(f"{src} ➡️ {dest}")
-    if os.path.isfile(src):
-        shutil.copy2(src, dest)
-        print(f"✅ Copied {os.path.basename(src)} to {dest}")
-    else:
-        print(f"⚠️  Warning: {src} not found")
+for src, dest, is_dir in paths:
+    copy_path(os.path.expanduser(src), os.path.expanduser(dest), is_dir)

@@ -133,6 +133,19 @@ alias current-tag='git describe --tags'
 alias git-sha='git rev-parse --short HEAD'
 alias git-tags='git fetch origin --tags && git tag --list --sort=creatordate | tail -1'
 
+unalias delete-tag 2>/dev/null
+delete-tag() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: delete-tag <tag-name>"
+    return 1
+  fi
+  local tag="$1"
+  echo "Deleting tag '$tag' locally..."
+  git tag -d "$tag" || echo "Failed to delete local tag (may not exist)"
+  echo "Deleting tag '$tag' from remote..." 
+  git push --delete origin "$tag" || echo "Failed to delete remote tag (may not exist)"
+  echo "✅ Tag deletion complete"
+}
 
 unalias reopen-pr 2>/dev/null
 unalias re-open-pr 2>/dev/null
@@ -185,6 +198,27 @@ reopen-pr() {
   fi
 }
 alias re-open-pr=reopen-pr
+
+unalias approve-merge-pr 2>/dev/null
+
+# approve-merge-pr 1234 - approve and auto-merge without close/reopen
+approve-merge-pr() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: approve-merge-pr <pr-number>"
+    return 1
+  fi
+  sleep=3s
+  local pr_number="$1"
+
+  echo "Approving PR #${pr_number}..."
+  gh pr review "$pr_number" --approve || return 1
+  echo "✅ PR approved"
+  sleep "$sleep"
+
+  echo "Enabling auto-merge..."
+  gh pr merge "$pr_number" --auto --squash || return 1
+  echo "✅ Auto-merge enabled"
+}
 
 unalias run-porcelain 2>/dev/null
 run-porcelain() {

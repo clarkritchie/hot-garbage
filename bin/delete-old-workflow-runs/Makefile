@@ -1,29 +1,33 @@
 # Makefile for delete-old-workflow-runs
 
-.PHONY: install run clean help format lint lint-fix
+.PHONY: install-deps run clean help format lint lint-fix lock
 
 # Default target
 .DEFAULT_GOAL := help
 
 # Install dependencies
-install:
+install-deps:
 	poetry install
 
-# Run the script
-run:
-	poetry run delete-old-workflow-runs
+# Update lock file
+lock:
+	poetry lock
+
+# Run the script (pass ARGS="--gh-token ..." as needed)
+run: install-deps
+	poetry run python main.py $(ARGS)
 
 # Format code
 format:
-	poetry run ruff format delete_old_workflow_runs.py
+	poetry run ruff format main.py
 
 # Lint code
 lint:
-	poetry run ruff check delete_old_workflow_runs.py
+	poetry run ruff check main.py
 
-# Fix linting issues
+# Fix lint issues
 lint-fix:
-	poetry run ruff check --fix delete_old_workflow_runs.py
+	poetry run ruff check --fix main.py
 
 # Clean up
 clean:
@@ -37,15 +41,16 @@ help:
 	@echo ""
 	@echo "Delete Old Workflow Runs - Available targets:"
 	@echo ""
-	@echo "  install   - Install dependencies with Poetry"
-	@echo "  run       - Run the delete script"
-	@echo "  format    - Format code with Ruff"
-	@echo "  lint      - Lint code with Ruff"
-	@echo "  lint-fix  - Fix linting issues with Ruff"
-	@echo "  clean     - Clean up temporary files"
-	@echo "  help      - Show this help message"
+	@echo "  install-deps - Install dependencies with Poetry"
+	@echo "  run          - Run the delete script (installs deps first)"
+	@echo "  format       - Format code with Ruff"
+	@echo "  lint         - Lint code with Ruff"
+	@echo "  lint-fix     - Fix linting issues with Ruff"
+	@echo "  lock         - Update Poetry lock file"
+	@echo "  clean        - Clean up temporary files"
+	@echo "  help         - Show this help message"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make install && make run"
-	@echo "  poetry run delete-old-workflow-runs"
+	@echo "  make run ARGS=\"--gh-token $$GH_TOKEN --repo-owner dexcom-inc --repo-name sre --days-old 180\""
+	@echo "  poetry run python main.py --gh-token $$GH_TOKEN --repo-owner dexcom-inc --repo-name sre --days-old 180"
 	@echo ""

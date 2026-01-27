@@ -1,63 +1,44 @@
 # Delete Old Workflow Runs
 
-Quick and dirty script to delete old workflow runs from a GitHub repository.
-
-No tests, no linting, no documentation, no guarantees, no problems.
+Delete old GitHub Actions workflow runs.
 
 ## Setup
 
-1. Install dependencies with Poetry:
-
-   ```bash
-   poetry install
-   ```
-
-2. Copy the example environment file and configure it:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Edit `.env` with your GitHub details:
-
-   ```env
-   GH_TOKEN=your_github_personal_access_token
-   REPO_OWNER=your_github_username_or_org
-   REPO_NAME=your_repository_name
-   DAYS_OLD=180
-   ```
+```bash
+❯ poetry install
+```
 
 ## Usage
 
-### With Poetry
-
 ```bash
-# Run directly with Poetry
-poetry run delete-old-workflow-runs
-
-# Or enter the virtual environment
-poetry shell
-delete-old-workflow-runs
+❯ poetry run python main.py \
+  --gh-token "${GH_TOKEN}" \
+  --repo-owner dexcom-inc \
+  --repo-name sre \
+  --days-old 180
 ```
 
-### As a Python module
-
 ```bash
-poetry run python delete_old_workflow_runs.py
+❯ poetry run python main.py \
+  --gh-token "${GH_TOKEN}" \
+  --repo-owner dexcom-inc \
+  --repo-name sre \
+  list-workflows
 ```
 
-## Configuration
+```bash
+❯ poetry run python main.py \
+  --gh-token "${GH_TOKEN}" \
+  --repo-owner dexcom-inc \
+  --repo-name sre \
+  --days-old 180 \
+  --workflow-filter cloudfunction-g7-us-ios-egv-bulk-upload-udp2.yaml
+```
 
-- `GH_TOKEN`: GitHub Personal Access Token with repo and actions permissions
-- `REPO_OWNER`: GitHub username or organization name
-- `REPO_NAME`: Repository name
-- `DAYS_OLD`: Number of days to keep workflow runs (default: 180)
+## Options
 
-## GitHub Token Requirements
-
-Your GitHub token needs the following permissions:
-
-- `repo` (full repository access)
-- `actions` (manage workflow runs)
-
-Create a token at: <https://github.com/settings/tokens>
+- `--gh-token` (required)
+- `--repo-owner` (required)
+- `--repo-name` (required)
+- `--days-old` (default: 180)
+- `--workflow-filter` (optional)

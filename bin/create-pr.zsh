@@ -68,8 +68,8 @@ echo "5) enhancement"
 echo "6) upgrade"
 echo "7) wip"
 echo "8) None"
-read "label_choices?Choose labels [default: 7]: "
-label_choices="${label_choices:-6}"
+read "label_choices?Choose labels [default: 8]: "
+label_choices="${label_choices:-8}"
 
 labels=""
 for choice in ${=label_choices}; do

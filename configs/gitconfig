@@ -72,6 +72,7 @@ wcpgw = commit -m ':alien: What could possibly go wrong...'
   # pager = less -F -X
   editor = vim
   whitespace = fix
+  hooksPath = ~/.config/git/hooks
 [interactive]
     diffFilter = delta --color-only
 [delta]

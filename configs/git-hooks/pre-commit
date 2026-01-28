@@ -1,12 +1,11 @@
 #!/bin/sh
-#
-# Pre-commit hook to prevent accidental commits to main/master branches
-#
 
+# Prevent accidental commits to main/master branches
 branch=$(git symbolic-ref --short HEAD 2>/dev/null)
 origin_url=$(git config --get remote.origin.url 2>/dev/null)
 
 if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+    # Allow main/master commits only for clarkritchie-owned repos.
     case "$origin_url" in
         git@github.com:clarkritchie/*|https://github.com/clarkritchie/*)
             :
@@ -20,12 +19,49 @@ if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
     esac
 fi
 
+# strip trailing whitespace
 files=$(git diff --cached --name-only --diff-filter=ACM)
 if [ -n "$files" ]; then
     for file in $files; do
         if [ -f "$file" ]; then
             perl -pi -e 's/[ \t]+$//' "$file"
             git add "$file"
+        fi
+    done
+fi
+
+# block merge conflict markers
+if [ -n "$files" ]; then
+    if git diff --cached --name-only --diff-filter=ACM -z | xargs -0 grep -nE "^(<<<<<<<|=======|>>>>>>>)" >/dev/null 2>&1; then
+        echo "❌ Merge conflict markers found in staged files. Resolve them before committing."
+        exit 1
+    fi
+fi
+
+# convert tabs to spaces in staged files
+if [ -n "$files" ]; then
+    for file in $files; do
+        if [ -f "$file" ]; then
+            if grep -q $'\t' "$file"; then
+                echo "⚠️  Converted tabs to spaces in $file"
+                perl -pi -e 's/\t/    /g' "$file"
+                git add "$file"
+            fi
+        fi
+    done
+fi
+
+# block large files (default 1MB)
+max_bytes=1048576
+if [ -n "$files" ]; then
+    for file in $files; do
+        if [ -f "$file" ]; then
+            file_bytes=$(wc -c < "$file" | tr -d ' ')
+            if [ "$file_bytes" -gt "$max_bytes" ]; then
+                echo "❌ $file is $file_bytes bytes (over ${max_bytes})."
+                echo "💡 Use Git LFS or reduce the file size."
+                exit 1
+            fi
         fi
     done
 fi

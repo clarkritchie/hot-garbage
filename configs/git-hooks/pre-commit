@@ -4,12 +4,30 @@
 #
 
 branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+origin_url=$(git config --get remote.origin.url 2>/dev/null)
 
 if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
-    echo "❌ Direct commits to $branch are not allowed!"
-    echo "💡 Create a feature branch instead:"
-    echo "   git co <branch-name>"
-    exit 1
+    case "$origin_url" in
+        git@github.com:clarkritchie/*|https://github.com/clarkritchie/*)
+            :
+            ;;
+        *)
+            echo "❌ Direct commits to $branch are not allowed!"
+            echo "💡 Create a feature branch instead:"
+            echo "   git co <branch-name>"
+            exit 1
+            ;;
+    esac
+fi
+
+files=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -n "$files" ]; then
+    for file in $files; do
+        if [ -f "$file" ]; then
+            perl -pi -e 's/[ \t]+$//' "$file"
+            git add "$file"
+        fi
+    done
 fi
 
 exit 0

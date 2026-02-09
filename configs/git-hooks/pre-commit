@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # Prevent accidental commits to main/master branches
 branch=$(git symbolic-ref --short HEAD 2>/dev/null)
@@ -32,16 +32,22 @@ fi
 
 # block merge conflict markers
 if [ -n "$files" ]; then
-    if git diff --cached --name-only --diff-filter=ACM -z | xargs -0 grep -nE "^(<<<<<<<|=======|>>>>>>>)" >/dev/null 2>&1; then
+    if git diff --cached --name-only --diff-filter=ACM -z | xargs -0 grep -nE "^[[:space:]]*(<<<<<<<|=======|>>>>>>>)$" >/dev/null 2>&1; then
         echo "❌ Merge conflict markers found in staged files. Resolve them before committing."
         exit 1
     fi
 fi
 
-# convert tabs to spaces in staged files
+# convert tabs to spaces in staged files (except Makefiles which require tabs)
 if [ -n "$files" ]; then
     for file in $files; do
         if [ -f "$file" ]; then
+            # Skip Makefiles - they require tabs
+            case "$file" in
+                */Makefile|Makefile|*.mk)
+                    continue
+                    ;;
+            esac
             if grep -q $'\t' "$file"; then
                 echo "⚠️  Converted tabs to spaces in $file"
                 perl -pi -e 's/\t/    /g' "$file"

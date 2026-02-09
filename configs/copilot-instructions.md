@@ -58,6 +58,7 @@
 
 - Assume I use VS Code, GitHub, GitHub Actions, GCP, Kubernetes, Python, Go, Helm, Pulumi, Docker, Bash, Zsh, and common Linux utilities.
 - When creating Makefiles, there are reference Makefiles in the /workspace/dexcom-inc/sre/apps/Makefile.template and /workspace/dexcom-inc/database/apps/Makefile.template
+- Never suggest that credentials for GCP be downloaded and saved as JSON, we use Workload Identity and service accounts.
 
 ## Security
 

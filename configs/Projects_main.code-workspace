@@ -9,8 +9,8 @@
       "path": "dexcom-inc/sre-libs"
     },
     {
-      "name": "💾 Database (Deprecated)",
-      "path": "dexcom-inc/database"
+      "name": "🔑 Keycoak Config Manager",
+      "path": "dexcom-inc/keycloak-config-manager"
     },
     {
       "name": "____________________________________",
@@ -31,22 +31,14 @@
     {
       "name": "♻️ Reusable Workflows",
       "path": "dexcom-inc/dexcom-reusable-workflows"
-    }
-    {
-      "name": "____________________________________",
-      "path": "bar"
-    },
-    {
-      "name": "⛑️ Continuous Validation Tests",
-      "path": "dexcom-inc/tests"
-    },
-    {
-      "name": "🍉 SRE @ dex-integration-1",
-      "path": "dexcom-inc/sre-dex-integration-1"
     },
     {
       "name": "🐶 K8s Datadog",
       "path": "dexcom-inc/k8s-datadog"
+    },
+    {
+      "name": "💾 Database (Deprecated)",
+      "path": "dexcom-inc/database"
     },
     {
       "name": "____________________________________",

@@ -56,6 +56,7 @@ path=(
   $HOME/Projects/dexcom-inc/sre/etc
   $HOME/Projects/clarkritchie/hot-garbage/bin
   $HOME/.local/bin
+  $HOME/.rd/bin
   $path
 )
 path=(${^path}(N-/))
@@ -142,62 +143,62 @@ delete-tag() {
   local tag="$1"
   echo "Deleting tag '$tag' locally..."
   git tag -d "$tag" || echo "Failed to delete local tag (may not exist)"
-  echo "Deleting tag '$tag' from remote..." 
+  echo "Deleting tag '$tag' from remote..."
   git push --delete origin "$tag" || echo "Failed to delete remote tag (may not exist)"
   echo "✅ Tag deletion complete"
 }
 
-unalias reopen-pr 2>/dev/null
-unalias re-open-pr 2>/dev/null
+unalias prs 2>/dev/null
+alias prs=prs.zsh
 
 # reopen-pr 1234 y y - approve and auto-merge
 # reopen-pr 1234 n y - don't approve, but auto-merge
 # reopen-pr 1234 - prompt for both
-reopen-pr() {
-  if [[ -z "$1" ]]; then
-    echo "Usage: reopen-pr <pr-number> [approve:y/n] [auto-merge:y/n]"
-    return 1
-  fi
-  sleep=3s
-  local pr_number="$1"
-  local approve_pr="${2:-}"
-  local enable_auto="${3:-}"
+# reopen-pr() {
+#   if [[ -z "$1" ]]; then
+#     echo "Usage: reopen-pr <pr-number> [approve:y/n] [auto-merge:y/n]"
+#     return 1
+#   fi
+#   sleep=3s
+#   local pr_number="$1"
+#   local approve_pr="${2:-}"
+#   local enable_auto="${3:-}"
 
-  # Prompt if not provided as arguments
-  if [[ -z "$approve_pr" ]]; then
-    echo -n "Approve this PR? [y/N]: "
-    read -r approve_pr
-  fi
+#   # Prompt if not provided as arguments
+#   if [[ -z "$approve_pr" ]]; then
+#     echo -n "Approve this PR? [y/N]: "
+#     read -r approve_pr
+#   fi
 
-  if [[ -z "$enable_auto" ]]; then
-    echo -n "Enable auto-merge (squash)? [y/N]: "
-    read -r enable_auto
-  fi
+#   if [[ -z "$enable_auto" ]]; then
+#     echo -n "Enable auto-merge (squash)? [y/N]: "
+#     read -r enable_auto
+#   fi
 
-  echo "Closing PR #${pr_number}..."
-  gh pr close "$pr_number" || return 1
-  echo "Waiting $sleep seconds..."
-  sleep "$sleep"
+#   echo "Closing PR #${pr_number}..."
+#   gh pr close "$pr_number" || return 1
+#   echo "Waiting $sleep seconds..."
+#   sleep "$sleep"
 
-  echo "Reopening PR #${pr_number}..."
-  gh pr reopen "$pr_number" || return 1
-  echo "✅ PR #${pr_number} reopened - workflows should trigger now"
+#   echo "Reopening PR #${pr_number}..."
+#   gh pr reopen "$pr_number" || return 1
+#   echo "✅ PR #${pr_number} reopened - workflows should trigger now"
 
-  if [[ "$approve_pr" =~ ^[Yy]$ ]]; then
-    echo "Approving PR..."
-    gh pr review "$pr_number" --approve || return 1
-    echo "✅ PR approved"
-    sleep "$sleep"
-  fi
+#   if [[ "$approve_pr" =~ ^[Yy]$ ]]; then
+#     echo "Approving PR..."
+#     gh pr review "$pr_number" --approve || return 1
+#     echo "✅ PR approved"
+#     sleep "$sleep"
+#   fi
 
-  if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
-    echo "Enabling auto-merge..."
-    gh pr merge "$pr_number" --auto --squash || return 1
-    echo "✅ Auto-merge enabled"
-    sleep "$sleep"
-  fi
-}
-alias re-open-pr=reopen-pr
+#   if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
+#     echo "Enabling auto-merge..."
+#     gh pr merge "$pr_number" --auto --squash || return 1
+#     echo "✅ Auto-merge enabled"
+#     sleep "$sleep"
+#   fi
+# }
+# alias re-open-pr=reopen-pr
 
 unalias approve-merge-pr 2>/dev/null
 
@@ -260,6 +261,8 @@ fix-whitespace() {
     sed -i 's/[[:space:]]*$//' "$file_path"
   fi
 }
+
+alias yaml-az='yq e -i "sort_keys(..)" $1'
 
 # ============================================================================
 # ARGOCD

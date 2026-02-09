@@ -44,7 +44,7 @@ log-1 = !git --no-pager log --oneline | head
 oops = reset --hard HEAD
 p = push
 pp = "!git pull && !git push"
-recent-tags = "!git fetch --tags && git for-each-ref --sort=-creatordate --format='%(creatordate:format:%Y-%m-%d %H:%M) %(refname:short)' refs/tags | head -n 10"
+recent-tags = "!git fetch --tags --force && git tag --sort=-creatordate --format='%(creatordate:short): %(refname:short)' | head -n 10"
 sha = "rev-parse --short HEAD"
 sha-full = "rev-parse HEAD"
 sp = "!f() { \

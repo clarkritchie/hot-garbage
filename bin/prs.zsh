@@ -33,22 +33,22 @@ process_pr() {
   # Trigger CI with empty commit, if requested
   if [[ "$trigger_ci" =~ ^[Yy]$ || -z "$trigger_ci" ]]; then
     echo "Fetching latest changes..."
-    git fetch origin
+    git fetch -q origin
 
     echo "Checking out branch '$branch'..."
-    git checkout "$branch"
+    git checkout -q "$branch"
 
     echo "Updating to latest remote state..."
-    git reset --hard "origin/$branch"
+    git reset -q --hard "origin/$branch"
 
     echo "Rebasing from main..."
-    git rebase origin/main
+    git rebase -q origin/main
 
     echo "Creating empty commit..."
-    git commit --allow-empty -m "trigger ci"
+    git commit --allow-empty -m "trigger ci" > /dev/null
 
     echo "Pushing to origin..."
-    git push --force-with-lease origin "$branch"
+    git push -q --force-with-lease origin "$branch"
 
     echo "✅ Empty commit pushed - CI should trigger now"
     sleep 3
@@ -89,8 +89,7 @@ main() {
     if command -v fzf &> /dev/null; then
       # Use fzf for interactive selection with arrow keys
       echo "Fetching unapproved PRs..."
-      local selected
-      selected=$(GH_PAGER="" gh pr list --state open --limit 50 --json number,title,reviewDecision --jq '.[] | select(.reviewDecision != "APPROVED") | "\(.number)\t\(.title)"' | fzf --height=20 --reverse --header="Select a PR (use arrow keys, ESC to exit)")
+      local selected=$(GH_PAGER="" gh pr list --state open --limit 50 --json number,title,reviewDecision --jq '.[] | select(.reviewDecision != "APPROVED") | "\(.number)\t\(.title)"' | fzf --height=20 --reverse --header="Select a PR (use arrow keys, ESC to exit)")
       if [[ -z "$selected" ]]; then
         echo "Exiting..."
         exit 0

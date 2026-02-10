@@ -35,48 +35,51 @@ process_pr() {
     # Save current branch
     local original_branch=$(git rev-parse --abbrev-ref HEAD)
 
-    echo "Fetching latest changes..."
+    echo ""
+    echo "→ Fetching latest changes..."
     git fetch -q origin
 
-    echo "Checking out branch '$branch'..."
+    echo "→ Checking out '$branch'..."
     git checkout -q "$branch"
 
-    echo "Updating to latest remote state..."
+    echo "→ Updating to latest remote state..."
     git reset -q --hard "origin/$branch"
 
-    echo "Rebasing from main..."
+    echo "→ Rebasing from main..."
     git rebase -q origin/main
 
-    echo "Creating empty commit..."
+    echo "→ Creating empty commit..."
     git commit --allow-empty -m "trigger ci" > /dev/null
 
-    echo "Pushing to origin..."
+    echo "→ Pushing to origin..."
     git push -q --force-with-lease origin "$branch" 2>/dev/null
 
-    echo "Empty commit pushed - CI should trigger now"
-
-    # Switch back and delete local branch
-    echo "Cleaning up local branch..."
+    echo "→ Cleaning up local branch..."
     git checkout -q "$original_branch"
     git branch -D "$branch" > /dev/null 2>&1
 
-    sleep 3
+    echo "✓ Empty commit pushed - CI triggered"
+    sleep 2
   fi
 
   # Approve, if requested
   if [[ "$approve_pr" =~ ^[Yy]$ ]]; then
-    echo "Approving PR..."
+    echo ""
+    echo "→ Approving PR..."
     gh pr review "$pr_number" --approve
-    echo "PR approved"
-    sleep 3
+    echo "✓ PR approved"
+    sleep 2
   fi
 
   # Enable auto-merge if requested
   if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
-    echo "Enabling auto-merge..."
+    echo ""
+    echo "→ Enabling auto-merge..."
     gh pr merge "$pr_number" --auto --squash
-    echo "Auto-merge enabled"
+    echo "✓ Auto-merge enabled"
   fi
+
+  echo ""
 }
 
 main() {
@@ -97,27 +100,32 @@ main() {
   while true; do
     if command -v fzf &> /dev/null; then
       # Use fzf for interactive selection with arrow keys
-      echo "Fetching unapproved PRs..."
+      echo ""
+      echo "→ Fetching unapproved PRs..."
       local selected=$(GH_PAGER="" gh pr list --state open --limit 50 --json number,title,reviewDecision --jq '.[] | select(.reviewDecision != "APPROVED") | "\(.number)\t\(.title)"' | fzf --height=20 --reverse --header="Select a PR (use arrow keys, ESC to exit)")
       if [[ -z "$selected" ]]; then
-        echo "Exiting..."
+        echo ""
+        echo "✓ Done"
         exit 0
       fi
       pr_number=$(echo "$selected" | awk '{print $1}')
+      echo ""
     else
       # Fallback to simple prompt
       echo ""
-      echo "Fetching unapproved PRs..."
+      echo "→ Fetching unapproved PRs..."
       GH_PAGER="" gh pr list --state open --limit 50 --json number,title,reviewDecision --jq '.[] | select(.reviewDecision != "APPROVED") | "\(.number)\t\(.title)"'
       echo ""
       echo -n "Enter PR number (or 'exit' to quit): "
       read -r pr_input
 
       if [[ -z "$pr_input" || "$pr_input" == "exit" ]]; then
-        echo "Exiting..."
+        echo ""
+        echo "✓ Done"
         exit 0
       fi
       pr_number="$pr_input"
+      echo ""
     fi
 
     process_pr "$pr_number"

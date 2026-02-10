@@ -32,6 +32,9 @@ process_pr() {
 
   # Trigger CI with empty commit, if requested
   if [[ "$trigger_ci" =~ ^[Yy]$ || -z "$trigger_ci" ]]; then
+    # Save current branch
+    local original_branch=$(git rev-parse --abbrev-ref HEAD)
+
     echo "Fetching latest changes..."
     git fetch -q origin
 
@@ -48,9 +51,15 @@ process_pr() {
     git commit --allow-empty -m "trigger ci" > /dev/null
 
     echo "Pushing to origin..."
-    git push -q --force-with-lease origin "$branch"
+    git push -q --force-with-lease origin "$branch" 2>/dev/null
 
-    echo "✅ Empty commit pushed - CI should trigger now"
+    echo "Empty commit pushed - CI should trigger now"
+
+    # Switch back and delete local branch
+    echo "Cleaning up local branch..."
+    git checkout -q "$original_branch"
+    git branch -D "$branch" > /dev/null 2>&1
+
     sleep 3
   fi
 
@@ -58,7 +67,7 @@ process_pr() {
   if [[ "$approve_pr" =~ ^[Yy]$ ]]; then
     echo "Approving PR..."
     gh pr review "$pr_number" --approve
-    echo "✅ PR approved"
+    echo "PR approved"
     sleep 3
   fi
 
@@ -66,7 +75,7 @@ process_pr() {
   if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
     echo "Enabling auto-merge..."
     gh pr merge "$pr_number" --auto --squash
-    echo "✅ Auto-merge enabled"
+    echo "Auto-merge enabled"
   fi
 }
 

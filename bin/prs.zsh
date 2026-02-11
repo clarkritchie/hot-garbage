@@ -58,7 +58,7 @@ process_pr() {
     git checkout -q "$original_branch"
     git branch -D "$branch" > /dev/null 2>&1
 
-    echo "✓ Empty commit pushed - CI triggered"
+    echo "✓ Empty commit pushed to trigger CI workflow"
     sleep 2
   fi
 

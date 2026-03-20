@@ -58,4 +58,4 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 else
   echo "Aborting. No branches were deleted."
 fi
-lis
+

@@ -149,7 +149,8 @@ delete-tag() {
 }
 
 unalias prs 2>/dev/null
-alias prs=prs.zsh
+# alias prs=prs.zsh
+alias prs=prs.py
 
 # reopen-pr 1234 y y - approve and auto-merge
 # reopen-pr 1234 n y - don't approve, but auto-merge
@@ -297,6 +298,8 @@ new-zshrc() {
   echo "Installing new .zshrc"
   cp "$src" "$dest" && source "$dest" 2>/dev/null
   cp "$src" "${HOME}/$backup1"
+  echo "Sourcing the updated .zshrc"
+  source ~/.zshrc
 }
 
 unalias new-configs 2>/dev/null
@@ -355,9 +358,13 @@ fi
 # SOURCE EXTERNAL CONFIGS
 # ============================================================================
 
+
 for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-more-zsh.zshrc" "$HOME/Projects/etc/cloudsql-aliases.zshrc"; do
   [[ -f $file ]] && source $file
 done
+
+# VSCode Shell Integration -- https://code.visualstudio.com/docs/terminal/shell-integration
+[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
 
 # ============================================================================
 # END

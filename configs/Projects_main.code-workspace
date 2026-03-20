@@ -9,19 +9,19 @@
       "path": "dexcom-inc/sre-libs"
     },
     {
-      "name": "🔑 Keycoak Config Manager",
-      "path": "dexcom-inc/keycloak-config-manager"
+      "name": "⚡ Pulse",
+      "path": "dexcom-inc/pulse"
     },
     {
-      "name": "____________________________________",
-      "path": "baz"
+      "name": "🔑 Keycoak Config Manager",
+      "path": "dexcom-inc/keycloak-config-manager"
     },
     {
       "name": "🔱 TriDev",
       "path": "dexcom-inc/tridev"
     },
     {
-      "name": "⚽ Core Services",
+      "name": "⚽ Dexcom Core Services",
       "path": "dexcom-inc/dxcm-core-services"
     },
     {
@@ -29,20 +29,12 @@
       "path": "dexcom-inc/platform-toolbox"
     },
     {
-      "name": "♻️ Reusable Workflows",
+      "name": "♻️ Reusable GitHub Workflows",
       "path": "dexcom-inc/dexcom-reusable-workflows"
     },
     {
       "name": "🐶 K8s Datadog",
       "path": "dexcom-inc/k8s-datadog"
-    },
-    {
-      "name": "💾 Database (Deprecated)",
-      "path": "dexcom-inc/database"
-    },
-    {
-      "name": "____________________________________",
-      "path": "foo"
     },
     {
       "name": "🐤 Temporary",

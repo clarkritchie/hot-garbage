@@ -95,6 +95,9 @@ def process_pr(pr_number: str, repo: str, trigger_ci: bool, approve_pr: bool, en
 def prompt_yes_no(question: str, default_yes: bool = False) -> bool:
     hint = "[Y/n]" if default_yes else "[y/N]"
     answer = input(f"{question} {hint}: ").strip().lower()
+    if answer in ("q", "quit", "exit"):
+        print("\n✓ Exiting")
+        sys.exit(0)
     if not answer:
         return default_yes
     return answer.startswith("y")
@@ -197,4 +200,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n✓ Interrupted")
+        sys.exit(130)

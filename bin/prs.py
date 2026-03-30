@@ -69,25 +69,29 @@ def trigger_ci_via_api(pr_number: str, repo: str) -> None:
 def process_pr(pr_number: str, repo: str, trigger_ci: bool, approve_pr: bool, enable_auto: bool) -> None:
     print(f"→ Processing PR #{pr_number}...")
 
-    if trigger_ci:
-        print(f"  → Triggering CI for PR #{pr_number}...")
-        trigger_ci_via_api(pr_number, repo)
+    try:
+        if trigger_ci:
+            print(f"  → Triggering CI for PR #{pr_number}...")
+            trigger_ci_via_api(pr_number, repo)
 
-    if approve_pr:
-        print(f"  → Attempting to approve PR #{pr_number}...")
-        result = gh("pr", "review", pr_number, "--approve", check=False)
-        if result.returncode == 0:
-            print(f"✓ PR #{pr_number}: Approved")
-        else:
-            print(f"⚠ PR #{pr_number}: Approval failed or already approved")
+        if approve_pr:
+            print(f"  → Attempting to approve PR #{pr_number}...")
+            result = gh("pr", "review", pr_number, "--approve", check=False)
+            if result.returncode == 0:
+                print(f"✓ PR #{pr_number}: Approved")
+            else:
+                print(f"⚠ PR #{pr_number}: Approval failed or already approved")
 
-    if enable_auto:
-        print(f"  → Attempting to enable auto-merge for PR #{pr_number}...")
-        result = gh("pr", "merge", pr_number, "--auto", "--squash", check=False)
-        if result.returncode == 0:
-            print(f"✓ PR #{pr_number}: Auto-merge enabled")
-        else:
-            print(f"⚠ PR #{pr_number}: Auto-merge failed (may already be enabled)")
+        if enable_auto:
+            print(f"  → Attempting to enable auto-merge for PR #{pr_number}...")
+            result = gh("pr", "merge", pr_number, "--auto", "--squash", check=False)
+            if result.returncode == 0:
+                print(f"✓ PR #{pr_number}: Auto-merge enabled")
+            else:
+                print(f"⚠ PR #{pr_number}: Auto-merge failed (may already be enabled)")
+    except subprocess.CalledProcessError as e:
+        stderr = e.stderr.strip() if e.stderr else "unknown error"
+        print(f"❌ PR #{pr_number}: {stderr}", file=sys.stderr)
 
     print()
 
@@ -133,24 +137,78 @@ def select_with_fzf(prs: list[tuple[str, str]]) -> list[str]:
     return [line.split("\t", 1)[0] for line in result.stdout.strip().splitlines()]
 
 
+def parse_pr_args(args: list[str]) -> list[str]:
+    """Parse PR specifiers into a flat list of PR numbers.
+
+    Supports:
+      - single numbers:       42
+      - comma-separated:      42,57,63
+      - ranges (inclusive):   42-45  →  [42, 43, 44, 45]
+      - any combination:      42-45 57,63 99
+    """
+    prs: list[str] = []
+    for arg in args:
+        for token in arg.split(","):
+            token = token.strip()
+            if not token:
+                continue
+            if "-" in token:
+                parts = token.split("-", 1)
+                try:
+                    start, end = int(parts[0]), int(parts[1])
+                except ValueError:
+                    print(f"❌ Invalid range: {token}", file=sys.stderr)
+                    sys.exit(1)
+                if start > end:
+                    start, end = end, start
+                prs.extend(str(n) for n in range(start, end + 1))
+            else:
+                if not token.isdigit():
+                    print(f"❌ Invalid PR number: {token}", file=sys.stderr)
+                    sys.exit(1)
+                prs.append(token)
+    return prs
+
+
 def main() -> None:
     args = sys.argv[1:]
 
     if args and args[0] in ("-h", "--help"):
-        print("Usage: prs.py [PR_NUMBER]")
-        print("Triggers CI on a PR by pushing an empty commit using GitHub API")
+        print("Usage: prs.py [PR ...]")
+        print("Triggers CI on PRs by pushing an empty commit using the GitHub API")
         print()
-        print("Supports batch processing with fzf multi-select (Tab to select multiple PRs)")
+        print("PR specifiers:")
+        print("  42            single PR")
+        print("  42 57 63      space-separated")
+        print("  42,57,63      comma-separated")
+        print("  42-45         inclusive range")
+        print("  42-45 57,63   mix of the above")
+        print()
+        print("With no arguments, enters interactive fzf batch mode")
         sys.exit(0)
 
     repo = get_repo_info()
 
     if args:
-        pr_number = args[0]
+        pr_numbers = parse_pr_args(args)
+        count = len(pr_numbers)
+        print(f"Selected {count} PR(s): {', '.join(pr_numbers)}")
+        print()
         trigger = prompt_yes_no("Trigger CI?", default_yes=True)
         approve = prompt_yes_no("Approve?", default_yes=False)
         auto = prompt_yes_no("Auto-merge?", default_yes=False)
-        process_pr(pr_number, repo, trigger, approve, auto)
+
+        print()
+        if count == 1:
+            process_pr(pr_numbers[0], repo, trigger, approve, auto)
+        else:
+            print(f"→ Processing {count} PR(s) in parallel (max 5 concurrent)...")
+            print()
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                futures = {executor.submit(process_pr, pr, repo, trigger, approve, auto): pr for pr in pr_numbers}
+                for future in as_completed(futures):
+                    future.result()
+            print(f"✓ Completed processing {count} PR(s)")
         return
 
     # Batch mode — requires fzf

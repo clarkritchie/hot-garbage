@@ -25,6 +25,10 @@
       "path": "dexcom-inc/dxcm-core-services"
     },
     {
+      "name": "🛸 Pan Galactic Secret Finder",
+      "path": "dexcom-inc/pan-galactic-secret-finder"
+    },
+    {
       "name": "🟨 Platform Toolbox",
       "path": "dexcom-inc/platform-toolbox"
     },

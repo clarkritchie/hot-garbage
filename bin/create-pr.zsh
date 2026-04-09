@@ -16,12 +16,12 @@ if [[ "$skip_ci_choice" =~ ^[Yy]$ ]]; then
   pr_message="$pr_message [skip ci]"
 fi
 
-# Prompt for draft or regular PR, default is no
-read -r "draft_choice?Create as draft PR? (Y/n): "
-if [[ -z "$draft_choice" || "$draft_choice" =~ ^[Nn]$ ]]; then
-  draft_flag=""
-else
+# Prompt for draft or regular PR, default is not draft
+read -r "draft_choice?Create as draft PR? (y/N): "
+if [[ "$draft_choice" =~ ^[Yy]$ ]]; then
   draft_flag="--draft"
+else
+  draft_flag=""
 fi
 
 # Prompt for reviewers

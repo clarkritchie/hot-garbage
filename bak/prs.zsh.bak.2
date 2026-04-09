@@ -3,11 +3,8 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 [--yes] [PR_NUMBER]"
+  echo "Usage: $0 [PR_NUMBER]"
   echo "Triggers CI on a PR by pushing an empty commit using GitHub API"
-  echo ""
-  echo "Options:"
-  echo "  --yes    Skip confirmation prompts (defaults: trigger CI=yes, approve=yes, auto-merge=no)"
   echo ""
   echo "Supports batch processing with fzf multi-select (Tab to select multiple PRs)"
 }
@@ -96,16 +93,9 @@ process_pr() {
 }
 
 main() {
-  local skip_prompts=false
-
   if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     usage
     exit 0
-  fi
-
-  if [[ "${1:-}" == "--yes" ]]; then
-    skip_prompts=true
-    shift
   fi
 
   local repo=$(get_repo_info)
@@ -113,22 +103,16 @@ main() {
 
   # If PR number provided via CLI, process it and exit
   if [[ -n "$pr_number" ]]; then
-    if [[ "$skip_prompts" == true ]]; then
-      local trigger="true"
-      local approve="true"
-      local auto="false"
-    else
-      echo -n "Trigger CI? [Y/n]: "
-      read -r trigger_ci
-      echo -n "Approve? [y/N]: "
-      read -r approve_pr
-      echo -n "Auto-merge? [y/N]: "
-      read -r enable_auto
+    echo -n "Trigger CI? [Y/n]: "
+    read -r trigger_ci
+    echo -n "Approve? [y/N]: "
+    read -r approve_pr
+    echo -n "Auto-merge? [y/N]: "
+    read -r enable_auto
 
-      local trigger=$([[ "$trigger_ci" =~ ^[Yy]$ || -z "$trigger_ci" ]] && echo "true" || echo "false")
-      local approve=$([[ "$approve_pr" =~ ^[Yy]$ ]] && echo "true" || echo "false")
-      local auto=$([[ "$enable_auto" =~ ^[Yy]$ ]] && echo "true" || echo "false")
-    fi
+    local trigger=$([[ "$trigger_ci" =~ ^[Yy]$ || -z "$trigger_ci" ]] && echo "true" || echo "false")
+    local approve=$([[ "$approve_pr" =~ ^[Yy]$ ]] && echo "true" || echo "false")
+    local auto=$([[ "$enable_auto" =~ ^[Yy]$ ]] && echo "true" || echo "false")
 
     process_pr "$pr_number" "$repo" "$trigger" "$approve" "$auto"
     exit 0
@@ -166,23 +150,17 @@ main() {
     echo ""
 
     # Get default actions for all PRs
-    if [[ "$skip_prompts" == true ]]; then
-      local trigger="true"
-      local approve="true"
-      local auto="false"
-    else
-      echo "Default actions for all ${count} PR(s):"
-      echo -n "  Trigger CI? [Y/n]: "
-      read -r trigger_ci
-      echo -n "  Approve? [Y/n]: "
-      read -r approve_pr
-      echo -n "  Auto-merge? [y/N]: "
-      read -r enable_auto
+    echo "Default actions for all ${count} PR(s):"
+    echo -n "  Trigger CI? [Y/n]: "
+    read -r trigger_ci
+    echo -n "  Approve? [Y/n]: "
+    read -r approve_pr
+    echo -n "  Auto-merge? [y/N]: "
+    read -r enable_auto
 
-      local trigger=$([[ "$trigger_ci" =~ ^[Yy]$ || -z "$trigger_ci" ]] && echo "true" || echo "false")
-      local approve=$([[ "$approve_pr" =~ ^[Yy]$ || -z "$approve_pr" ]] && echo "true" || echo "false")
-      local auto=$([[ "$enable_auto" =~ ^[Yy]$ ]] && echo "true" || echo "false")
-    fi
+    local trigger=$([[ "$trigger_ci" =~ ^[Yy]$ || -z "$trigger_ci" ]] && echo "true" || echo "false")
+    local approve=$([[ "$approve_pr" =~ ^[Yy]$ || -z "$approve_pr" ]] && echo "true" || echo "false")
+    local auto=$([[ "$enable_auto" =~ ^[Yy]$ ]] && echo "true" || echo "false")
 
     echo ""
     echo "→ Processing ${count} PR(s) in parallel (max 5 concurrent)..."

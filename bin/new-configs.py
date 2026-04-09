@@ -27,6 +27,9 @@ def copy_path(src, dest, is_dir=False):
 
 paths = [
     ("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md", "~/Projects/dexcom-inc/sre/.github", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md", "~/Projects/dexcom-inc/sre-libs/.github", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md", "~/Projects/dexcom-inc/pulse/.github", False),
+    ("~/Projects/clarkritchie/hot-garbage/configs/copilot-instructions.md", "~/Projects/dexcom-inc/keycloak-config-manager/.github", False),
     ("~/Projects/clarkritchie/hot-garbage/configs/gitconfig", "~/.gitconfig", False),
     ("~/Projects/clarkritchie/hot-garbage/configs/Projects_main.code-workspace", "~/Projects/Projects.code-workspace", False),
     ("~/Projects/clarkritchie/hot-garbage/configs/clark-more-zsh.zshrc", "~/Projects/etc", False),

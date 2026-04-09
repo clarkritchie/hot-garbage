@@ -174,8 +174,11 @@ def main() -> None:
     args = sys.argv[1:]
 
     if args and args[0] in ("-h", "--help"):
-        print("Usage: prs.py [PR ...]")
+        print("Usage: prs.py [--yes] [PR ...]")
         print("Triggers CI on PRs by pushing an empty commit using the GitHub API")
+        print()
+        print("Options:")
+        print("  --yes         Skip prompts (defaults: trigger CI=yes, approve=yes, auto-merge=no)")
         print()
         print("PR specifiers:")
         print("  42            single PR")
@@ -187,6 +190,11 @@ def main() -> None:
         print("With no arguments, enters interactive fzf batch mode")
         sys.exit(0)
 
+    skip_prompts = False
+    if args and args[0] == "--yes":
+        skip_prompts = True
+        args = args[1:]
+
     repo = get_repo_info()
 
     if args:
@@ -194,9 +202,12 @@ def main() -> None:
         count = len(pr_numbers)
         print(f"Selected {count} PR(s): {', '.join(pr_numbers)}")
         print()
-        trigger = prompt_yes_no("Trigger CI?", default_yes=True)
-        approve = prompt_yes_no("Approve?", default_yes=False)
-        auto = prompt_yes_no("Auto-merge?", default_yes=False)
+        if skip_prompts:
+            trigger, approve, auto = True, True, False
+        else:
+            trigger = prompt_yes_no("Trigger CI?", default_yes=True)
+            approve = prompt_yes_no("Approve?", default_yes=False)
+            auto = prompt_yes_no("Auto-merge?", default_yes=False)
 
         print()
         if count == 1:
@@ -240,10 +251,13 @@ def main() -> None:
         print(f"Selected {count} PR(s)")
         print()
 
-        print(f"Default actions for all {count} PR(s):")
-        trigger = prompt_yes_no("  Trigger CI?", default_yes=True)
-        approve = prompt_yes_no("  Approve?", default_yes=True)
-        auto = prompt_yes_no("  Auto-merge?", default_yes=False)
+        if skip_prompts:
+            trigger, approve, auto = True, True, False
+        else:
+            print(f"Default actions for all {count} PR(s):")
+            trigger = prompt_yes_no("  Trigger CI?", default_yes=True)
+            approve = prompt_yes_no("  Approve?", default_yes=True)
+            auto = prompt_yes_no("  Auto-merge?", default_yes=False)
 
         print()
         print(f"→ Processing {count} PR(s) in parallel (max 5 concurrent)...")

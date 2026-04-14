@@ -6,9 +6,6 @@
 #     signingkey = YOUR_GPG_KEY
 [include]
   path = ~/.gitconfig.local
-[push]
-  autoSetupRemote = true
-  default = current
 [alias]
   bra = branch --format="%(refname:short)"
   bugs = commit -m ':bug: A small bugfix or two'
@@ -65,33 +62,35 @@
   # list remote branches that match my naming pattern
   remote-branches = "!git branch -r | grep clark | sed 's|origin/|- |' | while read line; do branch=$(echo $line | sed 's|- ||'); echo \"$line (delete with: git push origin :$branch)\"; done"
   wcpgw = commit -m ':alien: What could possibly go wrong...'
-
-[pull]
-  rebase = true
-[url "git@github.com:"]
-  insteadOf = https://github.com/
+[commit]
+  gpgsign = true
 [core]
   pager = delta
   editor = vim
   whitespace = fix
   hooksPath = ~/.config/git/hooks
-[interactive]
-    diffFilter = delta --color-only
 [delta]
-    navigate = true
-[merge]
-    conflictstyle = diff3
+  navigate = true
 [diff]
-    colorMoved = default
-[protocol "file"]
-  allow = always
-[safe]
-    directory = *
-[commit]
-  gpgsign = true
+  colorMoved = default
 [fetch]
   prune = true
-[rebase]
-  autosquash = true
 [help]
   autocorrect = 1
+[interactive]
+  diffFilter = delta --color-only
+[merge]
+  conflictstyle = diff3
+[protocol "file"]
+  allow = always
+[pull]
+  rebase = true
+[push]
+  autoSetupRemote = true
+  default = current
+[rebase]
+  autosquash = true
+[safe]
+  directory = *
+[url "git@github.com:"]
+  insteadOf = https://github.com/

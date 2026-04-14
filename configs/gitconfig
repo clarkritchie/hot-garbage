@@ -10,64 +10,61 @@
   autoSetupRemote = true
   default = current
 [alias]
-  # co = "!f() { git checkout -b clark/$1; }; f"
-  # co = "!sh -c 'dict=/usr/share/dict/words; words=($(cat \"$dict\" | awk \"{print tolower(\\$0)}\" | sort -R | head -n 2)); name=\"clark/${words[0]}-${words[1]}\"; git checkout -b \"$name\"'"
-  # co = "!f() { mo=$(date +"%b" | tr '[:upper:]' '[:lower:]') && day=$(date '+%d') && git checkout -b clark/${mo}-${day}-$1; }; f"
-bra = branch --format="%(refname:short)"
-bugs = commit -m ':bug: A small bugfix or two'
-check = !git status --porcelain | grep "^??" && echo "Warning: Untracked files found!" || echo "No untracked files."
-clean = status --porcelain | grep '^??' | cut -c4- | xargs rm -rf
-co = "!f() { \
-if [ \"$1\" = \"main\" ]; then \
-  git checkout main; \
-else \
-  mo=$(date +\"%b\" | tr '[:upper:]' '[:lower:]'); \
-  day=$(date '+%d'); \
-  git checkout -b clark/${mo}-${day}-$1; \
-fi; \
-}; f"
-copilot = "commit -m '🤖 Addresses feedback from our AI Overlords'"
-commitnv = commit --no-verify
-cleanup = commit -m ':bulb: Minor cleanup'
-dead = commit -m ':coffin: Removes old and/or dead code'
-cp = "!f() { \
-if [ -z \"$1\" ]; then \
-  echo \"🍒 There are no cherries to pick\"; \
-else \
-  git cherry-pick $1; \
-fi; \
-}; f"
-derp = commit -m ':see_no_evil: Whoops'
-docs = commit -m ':pencil2: Adds to documentation, code comments, etc.'
-experiment = commit -m ':test_tube: Experimenting...'
-fa = fetch -a
-hmmm = commit -m ':monocle_face: Debugging things'
-linting = commit -m ':lipstick: Linting fix-ups'
-minor = commit -m 'Minor fixes -- i.e. code consistency, small bugs, tests, documentation'
-vul = commit -m ':closed_lock_with_key: Package updates for vulnerability remediation'
-logs = "!f() { git --no-pager log --oneline | head -n ${1:-10}; }; f"
-oops = reset --hard HEAD
-p = push
-pp = "!git pull && git push"
-recent-tags = "!git fetch --tags --force && git tag --sort=-creatordate --format='%(creatordate:short): %(refname:short)' | head -n 10"
-sha = "rev-parse --short HEAD"
-sha-full = "rev-parse HEAD"
-sp = "!f() { \
-        git stash -u && \
-        git pull --rebase && \
-        git stash pop || true; \
-        git add -p; \
+  bra = branch --format="%(refname:short)"
+  bugs = commit -m ':bug: A small bugfix or two'
+  check = !git status --porcelain | grep "^??" && echo "Warning: Untracked files found!" || echo "No untracked files."
+  clean = status --porcelain | grep '^??' | cut -c4- | xargs rm -rf
+  co = "!f() { \
+    if [ \"$1\" = \"main\" ]; then \
+      git checkout main; \
+    else \
+      mo=$(date +\"%b\" | tr '[:upper:]' '[:lower:]'); \
+      day=$(date '+%d'); \
+      git checkout -b clark/${mo}-${day}-$1; \
+    fi; \
     }; f"
-standards = commit -m ':construction_worker: Bring this project up to team standards'
-tests = commit -m ':test_tube: Tests tests tests'
-trigger-ci = commit -m 'chore: trigger ci' --allow-empty
-typo = commit -m ':see_no_evil: Fixes a typo'
-ver-bump = commit -m ':chart_with_upwards_trend: Bumps one or more dependencies'
-wip = commit -m ':safety_vest: This is work in progress'
+  copilot = "commit -m '🤖 Addresses feedback from our AI Overlords'"
+  commitnv = commit --no-verify
+  cleanup = commit -m ':bulb: Minor cleanup'
+  dead = commit -m ':coffin: Removes old and/or dead code'
+  cp = "!f() { \
+    if [ -z \"$1\" ]; then \
+      echo \"🍒 There are no cherries to pick\"; \
+    else \
+      git cherry-pick $1; \
+    fi; \
+    }; f"
+  derp = commit -m ':see_no_evil: Whoops'
+  docs = commit -m ':pencil2: Adds to documentation, code comments, etc.'
+  experiment = commit -m ':test_tube: Experimenting...'
+  fa = fetch -a
+  hmmm = commit -m ':monocle_face: Debugging things'
+  linting = commit -m ':lipstick: Linting fix-ups'
+  minor = commit -m 'Minor fixes -- i.e. code consistency, small bugs, tests, documentation'
+  vul = commit -m ':closed_lock_with_key: Package updates for vulnerability remediation'
+  logs = "!f() { git --no-pager log --oneline | head -n ${1:-10}; }; f"
+  oops = reset --hard HEAD
+  p = push
+  pp = "!git pull && git push"
+  recent-tags = "!git fetch --tags --force && git tag --sort=-creatordate --format='%(creatordate:short): %(refname:short)' | head -n 10"
+  sha = "rev-parse --short HEAD"
+  sha-full = "rev-parse HEAD"
+  sp = "!f() { \
+    git stash -u && \
+    git pull --rebase && \
+    git stash pop || true; \
+    git add -p; \
+    }; f"
+  standards = commit -m ':construction_worker: Bring this project up to team standards'
+  tests = commit -m ':test_tube: Tests tests tests'
+  trigger-ci = commit -m 'chore: trigger ci' --allow-empty
+  typo = commit -m ':see_no_evil: Fixes a typo'
+  ver-bump = commit -m ':chart_with_upwards_trend: Bumps one or more dependencies'
+  wip = commit -m ':safety_vest: This is work in progress'
 
-# list remote branches that match my naming pattern
-remote-branches = "!git branch -r | grep clark | sed 's|origin/|- |' | while read line; do branch=$(echo $line | sed 's|- ||'); echo \"$line (delete with: git push origin :$branch)\"; done"
-wcpgw = commit -m ':alien: What could possibly go wrong...'
+  # list remote branches that match my naming pattern
+  remote-branches = "!git branch -r | grep clark | sed 's|origin/|- |' | while read line; do branch=$(echo $line | sed 's|- ||'); echo \"$line (delete with: git push origin :$branch)\"; done"
+  wcpgw = commit -m ':alien: What could possibly go wrong...'
 
 [pull]
   rebase = true
@@ -75,17 +72,13 @@ wcpgw = commit -m ':alien: What could possibly go wrong...'
   insteadOf = https://github.com/
 [core]
   pager = delta
-  # pager = less -F -X
   editor = vim
   whitespace = fix
   hooksPath = ~/.config/git/hooks
 [interactive]
     diffFilter = delta --color-only
 [delta]
-    navigate = true    # use n and N to move between diff sections
-    # delta detects terminal colors automatically; set one of these to disable auto-detection
-    # dark = true
-    # light = true
+    navigate = true
 [merge]
     conflictstyle = diff3
 [diff]

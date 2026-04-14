@@ -8,9 +8,44 @@ multi-select (Tab to select multiple PRs).
 
 import json
 import re
+import shutil
 import subprocess
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+_print_lock = threading.Lock()
+
+# ANSI colors — disabled when stdout is not a TTY
+_USE_COLOR = sys.stdout.isatty()
+
+
+def _c(code: str, text: str) -> str:
+    return f"\033[{code}m{text}\033[0m" if _USE_COLOR else text
+
+
+def green(text: str) -> str:
+    return _c("32", text)
+
+
+def yellow(text: str) -> str:
+    return _c("33", text)
+
+
+def red(text: str) -> str:
+    return _c("31", text)
+
+
+def cyan(text: str) -> str:
+    return _c("36", text)
+
+
+def bold(text: str) -> str:
+    return _c("1", text)
+
+
+def dim(text: str) -> str:
+    return _c("2", text)
 
 
 def get_repo_info() -> str:
@@ -23,7 +58,7 @@ def get_repo_info() -> str:
     url = result.stdout.strip()
     match = re.search(r"github\.com[:/]([^/]+)/([^/\.]+)", url)
     if not match:
-        print("❌ Could not parse GitHub repo from remote URL", file=sys.stderr)
+        print(red("❌ Could not parse GitHub repo from remote URL"), file=sys.stderr)
         sys.exit(1)
     return f"{match.group(1)}/{match.group(2)}"
 
@@ -32,17 +67,19 @@ def gh(*args: str, check: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(["gh", *args], capture_output=True, text=True, check=check)
 
 
-def trigger_ci_via_api(pr_number: str, repo: str) -> None:
-    result = gh("pr", "view", pr_number, "--json", "headRefName,headRefOid", "--jq", "{branch: .headRefName, sha: .headRefOid}")
+def trigger_ci_via_api(pr_number: str, repo: str, lines: list[str] | None = None) -> None:
+    result = gh("pr", "view", pr_number, "--repo", repo, "--json", "headRefName,headRefOid", "--jq", "{branch: .headRefName, sha: .headRefOid}")
     pr_data = json.loads(result.stdout.strip())
     branch = pr_data.get("branch", "")
     head_sha = pr_data.get("sha", "")
 
+    _log = lines.append if lines is not None else print
+
     if not branch or not head_sha:
-        print(f"❌ PR #{pr_number}: Could not get branch or SHA", file=sys.stderr)
+        _log(red(f"❌ PR #{pr_number}: Could not get branch or SHA"))
         return
 
-    print(f"  → Branch: {branch}, SHA: {head_sha[:7]}")
+    _log(dim(f"  → Branch: {branch}, SHA: {head_sha[:7]}"))
 
     tree_result = gh("api", f"repos/{repo}/git/commits/{head_sha}", "--jq", ".tree.sha")
     tree_sha = tree_result.stdout.strip()
@@ -50,7 +87,7 @@ def trigger_ci_via_api(pr_number: str, repo: str) -> None:
     commit_result = gh(
         "api", f"repos/{repo}/git/commits",
         "--method", "POST",
-        "--field", "message=trigger ci",
+        "--field", f"message=chore: trigger ci for #{pr_number}",
         "--field", f"tree={tree_sha}",
         "--field", f"parents[]={head_sha}",
         "--jq", ".sha",
@@ -61,55 +98,59 @@ def trigger_ci_via_api(pr_number: str, repo: str) -> None:
         "api", f"repos/{repo}/git/refs/heads/{branch}",
         "--method", "PATCH",
         "--field", f"sha={new_sha}",
-        "--silent",
     )
-    print(f"✓ PR #{pr_number}: Empty commit pushed via API")
+    _log(green(f"✓ PR #{pr_number}: Empty commit pushed via API"))
 
 
 def process_pr(pr_number: str, repo: str, trigger_ci: bool, approve_pr: bool, enable_auto: bool) -> None:
-    print(f"→ Processing PR #{pr_number}...")
+    lines: list[str] = []
+    lines.append(bold(f"→ Processing PR #{pr_number}..."))
 
     try:
         if trigger_ci:
-            print(f"  → Triggering CI for PR #{pr_number}...")
-            trigger_ci_via_api(pr_number, repo)
+            lines.append(cyan(f"  → Triggering CI for PR #{pr_number}..."))
+            trigger_ci_via_api(pr_number, repo, lines)
 
         if approve_pr:
-            print(f"  → Attempting to approve PR #{pr_number}...")
-            result = gh("pr", "review", pr_number, "--approve", check=False)
+            lines.append(cyan(f"  → Attempting to approve PR #{pr_number}..."))
+            result = gh("pr", "review", pr_number, "--repo", repo, "--approve", check=False)
             if result.returncode == 0:
-                print(f"✓ PR #{pr_number}: Approved")
+                lines.append(green(f"✓ PR #{pr_number}: Approved"))
             else:
-                print(f"⚠ PR #{pr_number}: Approval failed or already approved")
+                lines.append(yellow(f"⚠ PR #{pr_number}: Approval failed or already approved"))
 
         if enable_auto:
-            print(f"  → Attempting to enable auto-merge for PR #{pr_number}...")
-            result = gh("pr", "merge", pr_number, "--auto", "--squash", check=False)
+            lines.append(cyan(f"  → Attempting to enable auto-merge for PR #{pr_number}..."))
+            result = gh("pr", "merge", pr_number, "--repo", repo, "--auto", "--squash", check=False)
             if result.returncode == 0:
-                print(f"✓ PR #{pr_number}: Auto-merge enabled")
+                lines.append(green(f"✓ PR #{pr_number}: Auto-merge enabled"))
             else:
-                print(f"⚠ PR #{pr_number}: Auto-merge failed (may already be enabled)")
+                lines.append(yellow(f"⚠ PR #{pr_number}: Auto-merge failed (may already be enabled)"))
     except subprocess.CalledProcessError as e:
         stderr = e.stderr.strip() if e.stderr else "unknown error"
-        print(f"❌ PR #{pr_number}: {stderr}", file=sys.stderr)
+        lines.append(red(f"❌ PR #{pr_number}: {stderr}"))
 
-    print()
+    lines.append("")
+    with _print_lock:
+        for line in lines:
+            print(line)
 
 
 def prompt_yes_no(question: str, default_yes: bool = False) -> bool:
     hint = "[Y/n]" if default_yes else "[y/N]"
     answer = input(f"{question} {hint}: ").strip().lower()
     if answer in ("q", "quit", "exit"):
-        print("\n✓ Exiting")
+        print(green("\n✓ Exiting"))
         sys.exit(0)
     if not answer:
         return default_yes
     return answer.startswith("y")
 
 
-def fetch_unapproved_prs() -> list[tuple[str, str]]:
+def fetch_unapproved_prs(repo: str) -> list[tuple[str, str]]:
     result = gh(
         "pr", "list",
+        "--repo", repo,
         "--state", "open",
         "--limit", "50",
         "--json", "number,title,reviewDecision",
@@ -157,14 +198,14 @@ def parse_pr_args(args: list[str]) -> list[str]:
                 try:
                     start, end = int(parts[0]), int(parts[1])
                 except ValueError:
-                    print(f"❌ Invalid range: {token}", file=sys.stderr)
+                    print(red(f"❌ Invalid range: {token}"), file=sys.stderr)
                     sys.exit(1)
                 if start > end:
                     start, end = end, start
                 prs.extend(str(n) for n in range(start, end + 1))
             else:
                 if not token.isdigit():
-                    print(f"❌ Invalid PR number: {token}", file=sys.stderr)
+                    print(red(f"❌ Invalid PR number: {token}"), file=sys.stderr)
                     sys.exit(1)
                 prs.append(token)
     return prs
@@ -200,7 +241,7 @@ def main() -> None:
     if args:
         pr_numbers = parse_pr_args(args)
         count = len(pr_numbers)
-        print(f"Selected {count} PR(s): {', '.join(pr_numbers)}")
+        print(bold(f"Selected {count} PR(s): {', '.join(pr_numbers)}"))
         print()
         if skip_prompts:
             trigger, approve, auto = True, True, False
@@ -213,42 +254,40 @@ def main() -> None:
         if count == 1:
             process_pr(pr_numbers[0], repo, trigger, approve, auto)
         else:
-            print(f"→ Processing {count} PR(s) in parallel (max 5 concurrent)...")
+            print(cyan(f"→ Processing {count} PR(s) in parallel (max 5 concurrent)..."))
             print()
             with ThreadPoolExecutor(max_workers=5) as executor:
                 futures = {executor.submit(process_pr, pr, repo, trigger, approve, auto): pr for pr in pr_numbers}
                 for future in as_completed(futures):
                     future.result()
-            print(f"✓ Completed processing {count} PR(s)")
+            print(green(f"✓ Completed processing {count} PR(s)"))
         return
 
     # Batch mode — requires fzf
-    if subprocess.run(["command", "-v", "fzf"], capture_output=True, shell=False).returncode != 0:
-        result = subprocess.run(["which", "fzf"], capture_output=True)
-        if result.returncode != 0:
-            print("❌ fzf is required for batch processing")
-            print("Install with: brew install fzf")
-            sys.exit(1)
+    if not shutil.which("fzf"):
+        print(red("❌ fzf is required for batch processing"))
+        print("Install with: brew install fzf")
+        sys.exit(1)
 
     while True:
         print()
-        print("→ Fetching unapproved PRs, using Python...")
-        prs = fetch_unapproved_prs()
+        print(cyan("→ Fetching unapproved PRs, using Python..."))
+        prs = fetch_unapproved_prs(repo)
 
         if not prs:
-            print("✓ No unapproved open PRs found")
+            print(green("✓ No unapproved open PRs found"))
             break
 
         selected = select_with_fzf(prs)
 
         if not selected:
             print()
-            print("✓ Done")
+            print(green("✓ Done"))
             break
 
         count = len(selected)
         print()
-        print(f"Selected {count} PR(s)")
+        print(bold(f"Selected {count} PR(s)"))
         print()
 
         if skip_prompts:
@@ -260,7 +299,7 @@ def main() -> None:
             auto = prompt_yes_no("  Auto-merge?", default_yes=False)
 
         print()
-        print(f"→ Processing {count} PR(s) in parallel (max 5 concurrent)...")
+        print(cyan(f"→ Processing {count} PR(s) in parallel (max 5 concurrent)..."))
         print()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
@@ -268,12 +307,12 @@ def main() -> None:
             for future in as_completed(futures):
                 future.result()
 
-        print(f"✓ Completed processing {count} PR(s)")
+        print(green(f"✓ Completed processing {count} PR(s)"))
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n✓ Interrupted")
+        print(green("\n✓ Interrupted"))
         sys.exit(130)

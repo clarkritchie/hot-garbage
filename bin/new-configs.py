@@ -38,3 +38,11 @@ paths = [
 
 for src, dest, is_dir in paths:
     copy_path(os.path.expanduser(src), os.path.expanduser(dest), is_dir)
+
+gitconfig_local = os.path.expanduser("~/.gitconfig.local")
+if not os.path.isfile(gitconfig_local):
+    print(f"\n⚠️  {gitconfig_local} not found — create it with your [user] block:")
+    print("  [user]")
+    print("    name = Your Name")
+    print("    email = you@example.com")
+    print("    signingkey = YOUR_GPG_KEY")

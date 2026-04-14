@@ -1,7 +1,11 @@
-[user]
-  name = User
-  email = user@example.com
-  signingkey = REDACTED
+# Personal settings go in gitconfig.local (not committed)
+# Create it with:
+#   [user]
+#     name = Your Name
+#     email = you@example.com
+#     signingkey = YOUR_GPG_KEY
+[include]
+  path = ~/.gitconfig.local
 [push]
   autoSetupRemote = true
   default = current

@@ -56,8 +56,9 @@ sp = "!f() { \
     }; f"
 standards = commit -m ':construction_worker: Bring this project up to team standards'
 tests = commit -m ':test_tube: Tests tests tests'
-trigger-ci = commit -m 'Trigger CI-CD' --allow-empty
+trigger-ci = commit -m 'chore: trigger ci' --allow-empty
 typo = commit -m ':see_no_evil: Fixes a typo'
+ver-bump = commit -m ':chart_with_upwards_trend: Bumps one or more dependencies'
 wip = commit -m ':safety_vest: This is work in progress'
 
 # list remote branches that match my naming pattern

@@ -9,6 +9,11 @@ read "pr_message?Enter PR title/body [default: $last_commit_message]: "
 if [[ -z "$pr_message" ]]; then
   pr_message="$last_commit_message"
 fi
+# Strip leading/trailing quotes that may come from commit messages or copy-paste
+pr_message="${pr_message#\"}"
+pr_message="${pr_message%\"}"
+pr_message="${pr_message#\'}"
+pr_message="${pr_message%\'}"
 
 # Prompt for skip CI
 read -r "skip_ci_choice?Skip CI? (y/N): "
@@ -28,12 +33,14 @@ fi
 echo "Select reviewers:"
 echo "1) None"
 echo "2) Nitesh"
-echo "3) Sai"
-echo "4) Robby"
+echo "3) Conner"
+echo "4) Sean"
 echo "5) Ashok"
 echo "6) Brandon"
-echo "7) Enter other name"
-read "reviewer_choice?Choose option (1-7) [default: 1]: "
+echo "7) Carlos"
+echo "8) Chakri"
+echo "9) Enter other name"
+read "reviewer_choice?Choose option (1-9) [default: 1]: "
 reviewer_choice="${reviewer_choice:-1}"
 
 case "$reviewer_choice" in
@@ -44,10 +51,10 @@ case "$reviewer_choice" in
     reviewers="nxk0122"
     ;;
   3)
-    reviewers="sainathvadyala"
+    reviewers="connerwattles"
     ;;
   4)
-    reviewers="dexcom-robby"
+    reviewers="seanblong"
     ;;
   5)
     reviewers="ashok-danaraddi"
@@ -56,6 +63,12 @@ case "$reviewer_choice" in
     reviewers="BrandonCsSanders"
     ;;
   7)
+    reviewers="carlosaudelo"
+    ;;
+  8)
+    reviewers="chakrii"
+    ;;
+  9)
     read "reviewers?Enter reviewers (comma-separated): "
     ;;
   *)

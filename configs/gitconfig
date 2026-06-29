@@ -7,6 +7,7 @@
 [include]
   path = ~/.gitconfig.local
 [alias]
+  bin = commit -m ':package: New Mac OS binary' --no-verify
   bra = branch --format="%(refname:short)"
   bugs = commit -m ':bug: A small bugfix or two'
   check = !git status --porcelain | grep "^??" && echo "Warning: Untracked files found!" || echo "No untracked files."

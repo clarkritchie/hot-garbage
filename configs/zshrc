@@ -89,6 +89,7 @@ eval "$(rbenv init -)"
 
 alias k=kubectl
 alias kcc="k config current-context"
+alias kp='k get pods'
 alias kdp='f() { k describe pod $1 };f'
 alias kevents='kubectl get events --sort-by=".metadata.creationTimestamp"'
 alias klc="k config get-contexts"
@@ -106,9 +107,40 @@ kdec() {
 
 unalias kgo 2>/dev/null
 kgo() {
-  pod=$(kubectl get pods --no-headers | awk "NR==$1" | awk '{print $1}')
-  echo "Getting a shell in $pod"
-  kubectl exec --stdin --tty "$pod" -- /bin/bash
+  local output selected choice i
+
+  output=$(kubectl get pods -o wide --no-headers 2>/dev/null)
+  if [[ -z "$output" ]]; then
+    echo "No pods found in the current namespace/context."
+    return 1
+  fi
+
+  local -a lines
+  lines=(${(f)${output}})
+
+  echo "Select a pod:"
+  i=1
+  for line in "${lines[@]}"; do
+    printf "  [%d] %s\n" "$i" "$(echo "$line" | awk '{printf "%-50s %s", $1, $5}')"
+    ((i++))
+  done
+
+  echo -n "Enter number (or q to quit): "
+  read -r choice
+
+  if [[ -z "$choice" || "$choice" == "q" || "$choice" == "Q" ]]; then
+    echo "Aborted."
+    return 1
+  fi
+
+  if ! [[ "$choice" =~ '^[0-9]+$' ]] || (( choice < 1 || choice > ${#lines[@]} )); then
+    echo "Invalid selection: $choice"
+    return 1
+  fi
+
+  selected=$(echo "${lines[$choice]}" | awk '{print $1}')
+  echo "Getting a shell in $selected"
+  kubectl exec --stdin --tty "$selected" -- /bin/bash
 }
 
 unalias krmreplicas 2>/dev/null
@@ -149,78 +181,7 @@ delete-tag() {
 }
 
 unalias prs 2>/dev/null
-# alias prs=prs.zsh
 alias prs=prs.py
-
-# reopen-pr 1234 y y - approve and auto-merge
-# reopen-pr 1234 n y - don't approve, but auto-merge
-# reopen-pr 1234 - prompt for both
-# reopen-pr() {
-#   if [[ -z "$1" ]]; then
-#     echo "Usage: reopen-pr <pr-number> [approve:y/n] [auto-merge:y/n]"
-#     return 1
-#   fi
-#   sleep=3s
-#   local pr_number="$1"
-#   local approve_pr="${2:-}"
-#   local enable_auto="${3:-}"
-
-#   # Prompt if not provided as arguments
-#   if [[ -z "$approve_pr" ]]; then
-#     echo -n "Approve this PR? [y/N]: "
-#     read -r approve_pr
-#   fi
-
-#   if [[ -z "$enable_auto" ]]; then
-#     echo -n "Enable auto-merge (squash)? [y/N]: "
-#     read -r enable_auto
-#   fi
-
-#   echo "Closing PR #${pr_number}..."
-#   gh pr close "$pr_number" || return 1
-#   echo "Waiting $sleep seconds..."
-#   sleep "$sleep"
-
-#   echo "Reopening PR #${pr_number}..."
-#   gh pr reopen "$pr_number" || return 1
-#   echo "✅ PR #${pr_number} reopened - workflows should trigger now"
-
-#   if [[ "$approve_pr" =~ ^[Yy]$ ]]; then
-#     echo "Approving PR..."
-#     gh pr review "$pr_number" --approve || return 1
-#     echo "✅ PR approved"
-#     sleep "$sleep"
-#   fi
-
-#   if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
-#     echo "Enabling auto-merge..."
-#     gh pr merge "$pr_number" --auto --squash || return 1
-#     echo "✅ Auto-merge enabled"
-#     sleep "$sleep"
-#   fi
-# }
-# alias re-open-pr=reopen-pr
-
-unalias approve-merge-pr 2>/dev/null
-
-# approve-merge-pr 1234 - approve and auto-merge without close/reopen
-approve-merge-pr() {
-  if [[ -z "$1" ]]; then
-    echo "Usage: approve-merge-pr <pr-number>"
-    return 1
-  fi
-  sleep=3s
-  local pr_number="$1"
-
-  echo "Approving PR #${pr_number}..."
-  gh pr review "$pr_number" --approve || return 1
-  echo "✅ PR approved"
-  sleep "$sleep"
-
-  echo "Enabling auto-merge..."
-  gh pr merge "$pr_number" --auto --squash || return 1
-  echo "✅ Auto-merge enabled"
-}
 
 unalias run-porcelain 2>/dev/null
 run-porcelain() {
@@ -245,6 +206,9 @@ run-porcelain() {
 alias ls='ls -lahp --color=auto'
 # alias c='command'
 alias rm-bak-files="find . -name '*.bak' -exec rm -f {} \;"
+
+alias gcloud-login="gcloud auth login"
+alias gcloud-ad-login="gcloud auth application-default login"
 
 alias compile-on="sed -i '' '4,5 s/^/#/' Pulumi.yaml"
 alias compile-off="sed -i '' '4,5 s/^#//' Pulumi.yaml"

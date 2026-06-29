@@ -219,7 +219,7 @@ def main() -> None:
         print("Triggers CI on PRs by pushing an empty commit using the GitHub API")
         print()
         print("Options:")
-        print("  --yes         Skip prompts (defaults: trigger CI=yes, approve=yes, auto-merge=no)")
+        print("  --yes         Skip prompts (defaults: trigger CI=yes, approve=yes, auto-merge=yes)")
         print()
         print("PR specifiers:")
         print("  42            single PR")
@@ -244,7 +244,7 @@ def main() -> None:
         print(bold(f"Selected {count} PR(s): {', '.join(pr_numbers)}"))
         print()
         if skip_prompts:
-            trigger, approve, auto = True, True, False
+            trigger, approve, auto = True, True, True
         else:
             trigger = prompt_yes_no("Trigger CI?", default_yes=True)
             approve = prompt_yes_no("Approve?", default_yes=False)
@@ -291,7 +291,7 @@ def main() -> None:
         print()
 
         if skip_prompts:
-            trigger, approve, auto = True, True, False
+            trigger, approve, auto = True, True, True
         else:
             print(f"Default actions for all {count} PR(s):")
             trigger = prompt_yes_no("  Trigger CI?", default_yes=True)

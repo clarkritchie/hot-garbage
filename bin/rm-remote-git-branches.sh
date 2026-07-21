@@ -48,7 +48,7 @@ skip_branches=("main" "master" "stage" "dev" "HEAD")
 if [[ "${PATTERN}" == "*" || "${PATTERN}" == ".*" ]]; then
   echo ""
   echo "⚠️  WARNING: You are about to evaluate ALL remote branches for deletion!"
-  echo "This will check $(echo "$branches" | wc -w) remote branches (excluding protected branches)."
+  echo "This will check $(echo "$branches" | wc -w | xargs) remote branches (excluding protected branches)."
   echo ""
   read -p "Are you sure you want to continue? (y/n) " confirm
   if [[ "$confirm" != "y" ]]; then
@@ -58,9 +58,11 @@ if [[ "${PATTERN}" == "*" || "${PATTERN}" == ".*" ]]; then
   echo ""
 fi
 
-echo "Found $(echo "$branches" | wc -w) remote branches to evaluate:"
+echo "Found $(echo "$branches" | wc -w | xargs) remote branches to evaluate:"
 echo "$branches" | tr ' ' '\n' | sed 's/^/  - /'
 echo ""
+
+delete_all=false
 
 for branch in $branches; do
   # Check if the branch is in the skip list
@@ -86,8 +88,22 @@ for branch in $branches; do
     echo ""
     # echo "Remote branch 'origin/$branch' is $branch_age days old."
     printf "Remote branch 'origin/$branch' is \033[0;32m%s days old\033[0m.\n" "$branch_age"
-    read -p "Do you want to delete this remote branch? (y/n) " answer
-    if [ "$answer" = "y" ]; then
+    if [ "$delete_all" = "false" ]; then
+      read -p "Do you want to delete this remote branch? (y/n/a/q) " answer
+      if [ "$answer" = "q" ]; then
+        echo "Quitting."
+        exit 0
+      fi
+      if [ "$answer" = "a" ]; then
+        read -p "Delete ALL remaining eligible branches with no further prompts? (y/n) " confirm_all
+        if [ "$confirm_all" != "y" ]; then
+          echo "Cancelled. Continuing with per-branch prompts."
+        else
+          delete_all=true
+        fi
+      fi
+    fi
+    if [ "$answer" = "y" ] || [ "$delete_all" = "true" ]; then
       echo "Deleting remote branch 'origin/$branch'..."
       git push origin --delete $branch
       if [ $? -eq 0 ]; then

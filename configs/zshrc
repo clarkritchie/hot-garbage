@@ -81,7 +81,7 @@ export TABSTOP=2
 export CLOUDSDK_PYTHON_SITEPACKAGES=1
 
 # --- rbenv ---
-eval "$(rbenv init -)"
+command -v rbenv >/dev/null 2>&1 && eval "$(rbenv init -)"
 
 # ============================================================================
 # KUBERNETES
@@ -161,7 +161,18 @@ kubeconfig-status() {
 # ============================================================================
 
 alias chart-bump="$HOME/Projects/clarkritchie/hot-garbage/bin/bump-helm-chart-version.zsh"
-alias create-pr='create-pr.zsh'
+create-pr() {
+  local base
+  if [[ -d /Users/clarkritchie/Projects/clarkritchie/hot-garbage ]]; then
+    base=/Users/clarkritchie/Projects/clarkritchie/hot-garbage
+  elif [[ -d /workspace/clarkritchie/hot-garbage ]]; then
+    base=/workspace/clarkritchie/hot-garbage
+  else
+    echo "create-pr: hot-garbage repo not found at either known location" >&2
+    return 1
+  fi
+  "$base/bin/create-pr.py" "$@"
+}
 alias current-tag='git describe --tags'
 alias git-sha='git rev-parse --short HEAD'
 alias git-tags='git fetch origin --tags && git tag --list --sort=creatordate | tail -1'
@@ -323,7 +334,7 @@ fi
 # ============================================================================
 
 
-for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-more-zsh.zshrc" "$HOME/Projects/etc/cloudsql-aliases.zshrc"; do
+for file in "$HOME/Projects/etc/api-keys.zshrc" "$HOME/Projects/etc/clark-zsh-aliases.zshrc" "$HOME/Projects/etc/cloudsql-aliases.zshrc"; do
   [[ -f $file ]] && source $file
 done
 

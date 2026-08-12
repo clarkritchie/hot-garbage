@@ -3,7 +3,35 @@
 BRANCH_AGE=${1:-7}
 
 # any branch in this list is skipped
-skip_branches=("main" "master" "stage" "dev")
+skip_branches=("main" "master" "stage" "dev", "prod")
+
+# --- Portable date helpers (GNU date on Linux, BSD date on macOS) ---
+epoch_to_ymd() {
+  local epoch="$1"
+  if date -d "@0" >/dev/null 2>&1; then
+    date -d "@$epoch" +%Y-%m-%d
+  else
+    date -r "$epoch" +%Y-%m-%d
+  fi
+}
+
+epoch_to_datetime() {
+  local epoch="$1"
+  if date -d "@0" >/dev/null 2>&1; then
+    date -d "@$epoch" '+%Y-%m-%d %H:%M:%S'
+  else
+    date -r "$epoch" '+%Y-%m-%d %H:%M:%S'
+  fi
+}
+
+ymd_to_epoch() {
+  local ymd="$1"
+  if date -d "$ymd" +%s >/dev/null 2>&1; then
+    date -d "$ymd" +%s
+  else
+    date -j -f "%Y-%m-%d" "$ymd" +%s
+  fi
+}
 
 # Get the current date in seconds since epoch
 current_date=$(date +%s)
@@ -23,10 +51,10 @@ for branch in $branches; do
   last_commit_date=$(git log -1 --format=%ct $branch)
 
   # Get current date at midnight (start of day)
-  current_date_midnight=$(date -j -f "%Y-%m-%d" "$(date +%Y-%m-%d)" +%s)
-  
+  current_date_midnight=$(ymd_to_epoch "$(epoch_to_ymd "$current_date")")
+
   # Get last commit date at midnight (start of that day)
-  last_commit_midnight=$(date -j -f "%Y-%m-%d" "$(date -r $last_commit_date +%Y-%m-%d)" +%s)
+  last_commit_midnight=$(ymd_to_epoch "$(epoch_to_ymd "$last_commit_date")")
 
   # Calculate the age of the branch in calendar days
   branch_age=$(( (current_date_midnight - last_commit_midnight) / 86400 ))
@@ -41,8 +69,7 @@ for branch in $branches; do
     # Cyan 36
     # White 37
     echo -e "Branch '\033[0;32m$branch\033[0m' is $branch_age days old."
-    # date uses BSD syntax for Mac OS
-    echo "  The last commit was on: $(date -r "$last_commit_date" '+%Y-%m-%d %H:%M:%S')"
+    echo "  The last commit was on: $(epoch_to_datetime "$last_commit_date")"
 
     read -p "Do you want to delete this branch? (y/n) " answer
     if [ "$answer" = "y" ]; then

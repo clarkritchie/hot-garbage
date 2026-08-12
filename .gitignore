@@ -1,4 +1,7 @@
 **/__pycache__
 **/.env*
+**/.coverage
 configs/clark-more-zsh.zshrc
 configs/gitconfig.local
+configs/Projects.code-workspace
+configs/clark-zsh-aliases.zshrc
